@@ -7,6 +7,6 @@
         android:id="@+id/listview_days"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fadingEdgeLength="48dp"
+        android:fadingEdgeLength="24dp"
         android:requiresFadingEdge="vertical" />
 </merge>

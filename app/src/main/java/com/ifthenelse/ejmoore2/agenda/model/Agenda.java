@@ -121,12 +121,12 @@ public class Agenda {
         }
 
         // One-to-many relationship from events to instances, and from calendars to events.
-        Map<Integer, Event> idToEventMap = new HashMap<>();
+        Map<Long, Event> idToEventMap = new HashMap<>();
         Map<Integer, Calendar> idToCalendarMap = Calendar.getVisibleCalendars(context);
 
         /* Construct instance objects from the cursor, fetching event data as needed. */
         while (cursor.moveToNext()) {
-            int eventId = cursor.getInt(0);
+            long eventId = cursor.getLong(0);
             long beginTime = cursor.getLong(1);
             long endTime = cursor.getLong(2);
 

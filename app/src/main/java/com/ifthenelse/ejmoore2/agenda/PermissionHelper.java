@@ -34,7 +34,8 @@ public class PermissionHelper {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Missing permission")
-                .setContentText("Tap to view");
+                .setContentText("Tap to view")
+                .setAutoCancel(true);
 
         Intent intent = new Intent(context, PermissionActivity.class);
         intent.putExtra(EXTRA_PERMISSION, permission);

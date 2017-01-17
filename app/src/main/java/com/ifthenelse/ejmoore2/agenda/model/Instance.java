@@ -31,7 +31,7 @@ public class Instance {
         this.event = event;
     }
 
-    public Event getEvent() {
+    private Event getEvent() {
         return event;
     }
 
@@ -41,6 +41,10 @@ public class Instance {
 
     public long getEndTime() {
         return endTime;
+    }
+
+    public long getEventId() {
+        return getEvent().getId();
     }
 
     public String getTitle() {

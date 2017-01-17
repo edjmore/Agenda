@@ -21,15 +21,21 @@ class Event {
 
     private static final int NO_COLOR = -1;
 
+    private long id;
     private String title;
     private int color;
 
     private Calendar calendar;
 
-    private Event(String title, int color, Calendar calendar) {
+    private Event(long id, String title, int color, Calendar calendar) {
+        this.id = id;
         this.title = title;
         this.color = color;
         this.calendar = calendar;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public Calendar getCalendar() {
@@ -44,7 +50,7 @@ class Event {
         return color != NO_COLOR ? color : getCalendar().getColor();
     }
 
-    static Event getById(Context context, int id, Map<Integer, Calendar> idToCalendarMap) {
+    static Event getById(Context context, long id, Map<Integer, Calendar> idToCalendarMap) {
         //noinspection MissingPermission
         Cursor cursor =
                 context.getContentResolver()
@@ -64,6 +70,6 @@ class Event {
         }
 
         cursor.close();
-        return new Event(title, color, calendar);
+        return new Event(id, title, color, calendar);
     }
 }

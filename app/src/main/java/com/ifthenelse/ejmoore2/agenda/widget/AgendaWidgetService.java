@@ -1,6 +1,7 @@
 package com.ifthenelse.ejmoore2.agenda.widget;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +23,7 @@ import java.util.Locale;
 
 public class AgendaWidgetService extends RemoteViewsService {
 
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("E, MM d", Locale.US);
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("EEEE, MMM d", Locale.US);
     private static final SimpleDateFormat STF = new SimpleDateFormat("hh:mm a", Locale.US);
 
     @Override
@@ -85,7 +86,23 @@ public class AgendaWidgetService extends RemoteViewsService {
                 Date time = new Date(instance.getBeginTime());
                 String timeString = STF.format(time);
                 listItem.setTextViewText(R.id.event_title_text, title);
+                listItem.setTextColor(R.id.event_title_text, color);
                 listItem.setTextViewText(R.id.event_subtitle_text, timeString);
+
+                // We generate a unique action for each intent b/c otherwise the
+                // system will merge all pending intents into one. The action string
+                // also provides all information necessary to open the correct calendar entry.
+                String uniqueAction =
+                        instance.getEventId() + "-" + instance.getBeginTime() + "-" +
+                                instance.getEndTime() + "-" + instance.getTitle();
+
+                Intent onClickIntent = new Intent(context, AgendaWidgetProvider.class)
+                        .setAction(uniqueAction)
+                        .putExtra(AgendaWidgetProvider.EXTRA_ACTION,
+                                context.getString(R.string.action_event_click));
+                PendingIntent pendingIntent =
+                        PendingIntent.getBroadcast(context, 0, onClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                listItem.setOnClickPendingIntent(R.id.event_container, pendingIntent);
 
                 rv.addView(R.id.linearlayout_events, listItem);
             }
