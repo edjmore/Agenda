@@ -26,7 +26,7 @@ class Event {
 
     private Calendar calendar;
 
-    Event(String title, int color, Calendar calendar) {
+    private Event(String title, int color, Calendar calendar) {
         this.title = title;
         this.color = color;
         this.calendar = calendar;
@@ -41,7 +41,7 @@ class Event {
     }
 
     public int getColor() {
-        return color != NO_COLOR ? color : calendar.getColor();
+        return color != NO_COLOR ? color : getCalendar().getColor();
     }
 
     static Event getById(Context context, int id, Map<Integer, Calendar> idToCalendarMap) {
@@ -56,7 +56,7 @@ class Event {
         cursor.moveToFirst();
         int calendarId = cursor.getInt(0);
         String title = cursor.getString(1);
-        int color = cursor.getInt(2);
+        int color = cursor.isNull(2) ? NO_COLOR : cursor.getInt(2);
 
         Calendar calendar = idToCalendarMap.get(calendarId);
         if (calendar == null) {

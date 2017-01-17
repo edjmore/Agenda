@@ -43,6 +43,14 @@ public class Instance {
         return endTime;
     }
 
+    public String getTitle() {
+        return getEvent().getTitle();
+    }
+
+    public int getColor() {
+        return getEvent().getColor();
+    }
+
     String getStartDateString() {
         return SDF.format(new Date(beginTime));
     }

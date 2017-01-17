@@ -56,7 +56,7 @@ public class Agenda {
             }
         }
 
-        private Date getDate() {
+        public Date getDate() {
             String dateString = getDateString();
             try {
                 SimpleDateFormat sdf = Instance.getDateFormat();

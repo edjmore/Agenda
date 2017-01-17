@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="@dimen/listitem_day_margin">
 
     <TextView
         android:id="@+id/day_text"
+        style="@style/AppTheme.Text.Headline"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="@dimen/headline_margin"
+        android:paddingTop="@dimen/headline_margin"
         android:text="@string/app_name" />
 
     <LinearLayout
         android:id="@+id/linearlayout_events"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/day_text"
         android:orientation="vertical">
 
     </LinearLayout>

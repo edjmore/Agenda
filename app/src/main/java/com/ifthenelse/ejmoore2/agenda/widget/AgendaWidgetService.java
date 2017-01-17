@@ -10,12 +10,20 @@ import android.widget.RemoteViewsService;
 import com.ifthenelse.ejmoore2.agenda.PermissionHelper;
 import com.ifthenelse.ejmoore2.agenda.R;
 import com.ifthenelse.ejmoore2.agenda.model.Agenda;
+import com.ifthenelse.ejmoore2.agenda.model.Instance;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by ejmoore2 on 1/15/17.
  */
 
 public class AgendaWidgetService extends RemoteViewsService {
+
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("E, MM d", Locale.US);
+    private static final SimpleDateFormat STF = new SimpleDateFormat("hh:mm a", Locale.US);
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
@@ -58,8 +66,29 @@ public class AgendaWidgetService extends RemoteViewsService {
         public RemoteViews getViewAt(int position) {
             RemoteViews rv = new RemoteViews(getPackageName(), R.layout.listitem_day);
 
+            // Set date indicator (e.g. "Tuesday, July 3")
             Agenda.Day day = agenda.getDays()[position];
-            rv.setTextViewText(R.id.day_text, day.toString());
+            Date date = day.getDate();
+            String dateString = SDF.format(date);
+            rv.setTextViewText(R.id.day_text, dateString);
+
+            // List view items are recycled, so the inner layout may not be empty.
+            rv.removeAllViews(R.id.linearlayout_events);
+
+            /* Construct an inner list view by appending views to the linear layout. */
+            for (Instance instance : day.getInstances()) {
+                RemoteViews listItem = new RemoteViews(getPackageName(), R.layout.listitem_event);
+
+                // Set event title and subtitle (e.g. "Going shopping\n3:00 PM")
+                String title = instance.getTitle();
+                int color = instance.getColor();
+                Date time = new Date(instance.getBeginTime());
+                String timeString = STF.format(time);
+                listItem.setTextViewText(R.id.event_title_text, title);
+                listItem.setTextViewText(R.id.event_subtitle_text, timeString);
+
+                rv.addView(R.id.linearlayout_events, listItem);
+            }
 
             return rv;
         }
