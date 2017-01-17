@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Agenda</string>
+
+    <string name="save_config">Save Configuration</string>
+
+    <string name="action_agenda_update">com.ifthenelse.ejmoore2.agenda.ACTION_AGENDA_UPDATE</string>
+
+    <string name="pure_bold">Nokia-Pure-Bold.ttf</string>
+    <string name="pure_bolditalic">Nokia-Pure-BoldItalic.ttf</string>
+    <string name="pure_italic">Nokia-Pure-Italic.ttf</string>
+    <string name="pure_regular">Nokia-Pure-Regular.ttf</string>
 </resources>

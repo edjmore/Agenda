@@ -5,7 +5,7 @@
     android:updatePeriodMillis="86400000"
     android:previewImage="@mipmap/ic_launcher"
     android:initialLayout="@layout/widget"
-    android:configure="com.ifthenelse.ejmoore2.agenda.ConfigActivity"
+    android:configure="com.ifthenelse.ejmoore2.agenda.view.ConfigActivity"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen">
 </appwidget-provider>
