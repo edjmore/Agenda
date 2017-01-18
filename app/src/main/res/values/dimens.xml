@@ -7,7 +7,7 @@
     <dimen name="icon_button_margin">8dp</dimen>
 
     <dimen name="button_padding">8dp</dimen>
-    <dimen name="rgroup_inset">10dp</dimen>
+    <dimen name="config_content_inset">10dp</dimen>
 
     <dimen name="colored_circle_diameter">12dp</dimen>
     <dimen name="colored_circle_margin">6dp</dimen>

@@ -11,10 +11,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import com.ifthenelse.ejmoore2.agenda.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.R;
+import com.ifthenelse.ejmoore2.agenda.Utils;
 import com.ifthenelse.ejmoore2.agenda.view.ConfigActivity;
 
 import java.util.Locale;
@@ -31,50 +32,55 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for (int widgetId : appWidgetIds) {
 
-            /* Initial widget setup, linking update service and initializing views. */
-            Intent serviceIntent = new Intent(context, AgendaWidgetService.class);
-            serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-
-            RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget);
-            rv.setRemoteAdapter(R.id.listview_days, serviceIntent);
-            rv.setEmptyView(R.id.listview_days, R.id.empty_view);
-
-            // Setup settings button on widget to open configuration activity.
-            Intent openConfigIntent = new Intent(context, ConfigActivity.class)
-                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-            PendingIntent pendingIntent =
-                    PendingIntent.getActivity(context, 0, openConfigIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            rv.setOnClickPendingIntent(R.id.button_open_config, pendingIntent);
-
-            AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
-            widgetManager.updateAppWidget(widgetId, rv);
+            ConfigActivity.performInitialWidgetSetup(context, widgetId);
         }
+    }
 
-        /* Setup a repeating alarm to update the widget content every ~15 minutes. */
-        Intent intent = new Intent(context, AgendaWidgetProvider.class);
-        String updateAgendaAction = context.getString(R.string.action_agenda_update);
-        intent.setAction(updateAgendaAction);
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        // Remove any saved user preferences for the given widgets.
+        for (int widgetId : appWidgetIds) {
+            ConfigManager.removeAllConfigsForWidget(context, widgetId);
+        }
+        super.onDeleted(context, appWidgetIds);
+    }
 
-        PendingIntent pendingIntent =
-                PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        long firstAlarm = System.currentTimeMillis();
+    public static void setNextUpdateAlarmExact(Context context, long alarmTime) {
+        PendingIntent pendingIntent = getUpdateAlarmIntent(context);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC, alarmTime, pendingIntent);
+    }
+
+    public static void setNextUpdateAlarmInexact(Context context) {
+        setNextUpdateAlarmInexact(context, System.currentTimeMillis());
+    }
+
+    private static void setNextUpdateAlarmInexact(Context context, long firstAlarm) {
+        PendingIntent pendingIntent = getUpdateAlarmIntent(context);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.RTC, firstAlarm,
                 AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
     }
 
+    private static PendingIntent getUpdateAlarmIntent(Context context) {
+        Intent intent = new Intent(context, AgendaWidgetProvider.class);
+        String updateAgendaAction = context.getString(R.string.action_agenda_update);
+        intent.setAction(updateAgendaAction);
+
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String updateAgendaAction = context.getString(R.string.action_agenda_update),
-                eventClickAction = context.getString(R.string.action_event_click);
+                eventClickAction = context.getString(R.string.action_event_click),
+                editNewEventAction = context.getString(R.string.action_edit_new_event),
+                openConfigAction = context.getString(R.string.action_open_config);
 
         if (intent.getAction().equals(updateAgendaAction)) {
 
             // Request view refreshes for all widget IDs.
-            AppWidgetManager manager = AppWidgetManager.getInstance(context);
-            ComponentName widgetName = new ComponentName(context, AgendaWidgetProvider.class);
-            int[] widgetIds = manager.getAppWidgetIds(widgetName);
-            manager.notifyAppWidgetViewDataChanged(widgetIds, R.id.listview_days);
+            refreshAllWidgets(context);
 
         } else if (eventClickAction.equals(intent.getStringExtra(EXTRA_ACTION))) {
 
@@ -106,41 +112,42 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
             if (viewEventIntent.resolveActivity(packageManager) != null) {
 
                 context.startActivity(viewEventIntent);
-
             } else {
 
                 /* Tell the user how long until this event starts (or finishes if in progress). */
-                int mins = (int) ((beginTime - System.currentTimeMillis()) / (1000 * 60));
-                String innerMsg = null;
-                if (mins > 0) {
-                    innerMsg = "begins";
-                } else {
-                    innerMsg = "ends";
-                    mins = (int) ((endTime - System.currentTimeMillis()) / (1000 * 60));
-                }
-
-                // Reduce the time unit to a sensible value and ensure grammatical correctness.
-                int timePeriod = mins;
-                String timeUnit = "minutes";
-                if (timePeriod >= 60 * 24) {
-                    timePeriod /= (60 * 24);
-                    timeUnit = "days";
-                } else if (timePeriod >= 60) {
-                    timePeriod /= 60;
-                    timeUnit = "hours";
-                }
-                if (timePeriod == 1) {
-                    timeUnit = timeUnit.substring(0, timeUnit.length() - 1); // removing the 's'
-                }
-                innerMsg += timePeriod == 0 ? " now" : " in";
-
-                String finalMsg = String.format(Locale.US, "\"%s\" %s", title, innerMsg) +
-                        (timePeriod == 0 ? "" : " " + timePeriod + " " + timeUnit);
+                String finalMsg = String.format(Locale.US, "\"%s\" %s",
+                        title, Utils.getRelativeEventTimeString(beginTime, endTime));
                 Toast.makeText(context, finalMsg, Toast.LENGTH_SHORT).show();
             }
 
+        } else if (editNewEventAction.equals(intent.getAction())) {
+
+            /* Bring user to calendar application to insert a new event. */
+            Intent insertIntent = new Intent(Intent.ACTION_INSERT)
+                    .setData(CalendarContract.Events.CONTENT_URI)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            PackageManager packageManager = context.getPackageManager();
+            if (insertIntent.resolveActivity(packageManager) != null) {
+
+                context.startActivity(insertIntent);
+            }
+        } else if (openConfigAction.equals(intent.getAction())) {
+
+            int widgetId =
+                    intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+            Intent openConfigIntent = new Intent(context, ConfigActivity.class)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(openConfigIntent);
         } else {
             super.onReceive(context, intent);
         }
+    }
+
+    public static void refreshAllWidgets(Context context) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        ComponentName widgetName = new ComponentName(context, AgendaWidgetProvider.class);
+        int[] widgetIds = manager.getAppWidgetIds(widgetName);
+        manager.notifyAppWidgetViewDataChanged(widgetIds, R.id.listview_days);
     }
 }

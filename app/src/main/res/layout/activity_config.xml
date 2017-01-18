@@ -10,13 +10,15 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.ifthenelse.ejmoore2.agenda.view.ConfigActivity">
 
+    <!-- Title and radio group for choosing agenda time period. -->
     <TextView
         android:id="@+id/time_period_title"
         style="@style/AppTheme.Text.Title.Dark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="@dimen/headline_margin"
-        android:text="@string/config_time_period_title" />
+        android:text="@string/config_time_period_title"
+        android:textStyle="normal" />
 
     <RadioGroup
         android:id="@+id/rgroup_time_period"
@@ -24,8 +26,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/time_period_title"
         android:orientation="vertical"
-        android:paddingLeft="@dimen/rgroup_inset"
-        android:paddingStart="@dimen/rgroup_inset">
+        android:paddingLeft="@dimen/config_content_inset"
+        android:paddingStart="@dimen/config_content_inset">
 
         <RadioButton
             android:id="@+id/rbutton_one_day"
@@ -59,6 +61,29 @@
             android:onClick="onRadioButtonClick"
             android:text="@string/one_month" />
     </RadioGroup>
+    <!-- End time period config. -->
+
+    <!-- Title and switch for toggling relative time strings. -->
+    <TextView
+        android:id="@+id/event_lower_line_options_title"
+        style="@style/AppTheme.Text.Title.Dark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rgroup_time_period"
+        android:layout_marginTop="@dimen/headline_margin"
+        android:padding="@dimen/headline_margin"
+        android:text="@string/config_event_lower_line_options_title"
+        android:textStyle="normal" />
+
+    <Switch
+        android:id="@+id/switch_relative_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/event_lower_line_options_title"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:onClick="onSwitchClick" />
+    <!-- End relative time config. -->
 
     <Button
         android:id="@+id/save_config_button"
