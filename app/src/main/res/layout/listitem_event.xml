@@ -5,21 +5,38 @@
     android:layout_height="match_parent"
     android:padding="@dimen/listitem_event_margin">
 
-    <TextView
-        android:id="@+id/event_title_text"
-        style="@style/AppTheme.Text.Title"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/event_upper_line"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="@dimen/title_margin"
-        android:paddingTop="@dimen/title_margin"
-        android:text="@string/app_name" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/event_title_text"
+            style="@style/AppTheme.Text.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingBottom="@dimen/title_margin"
+            android:paddingEnd="@dimen/headline_margin"
+            android:paddingRight="@dimen/headline_margin"
+            android:paddingTop="@dimen/title_margin" />
+
+        <ImageView
+            android:id="@+id/event_color_indicator"
+            android:layout_width="@dimen/colored_circle_diameter"
+            android:layout_height="@dimen/colored_circle_diameter"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/colored_circle_margin" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/event_subtitle_text"
         style="@style/AppTheme.Text.Subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/event_title_text"
-        android:paddingBottom="@dimen/subtitle_margin"
-        android:text="@string/app_name" />
+        android:layout_below="@+id/event_upper_line"
+        android:paddingBottom="@dimen/subtitle_margin" />
 </RelativeLayout>

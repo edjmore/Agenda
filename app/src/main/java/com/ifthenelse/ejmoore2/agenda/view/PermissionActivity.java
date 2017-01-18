@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.ifthenelse.ejmoore2.agenda.PermissionHelper;
 import com.ifthenelse.ejmoore2.agenda.R;
@@ -20,14 +21,18 @@ public class PermissionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = getIntent();
-        String permission = intent.getStringExtra(PermissionHelper.EXTRA_PERMISSION);
+        try {
+            Intent intent = getIntent();
+            String permission = intent.getStringExtra(PermissionHelper.EXTRA_PERMISSION);
 
-        PermissionHelper ph = new PermissionHelper();
-        if (!ph.checkPermission(this, permission)) {
-            ph.requestPermission(this, permission, REQUEST_PERMISSION);
-        } else {
-            finish();
+            PermissionHelper ph = new PermissionHelper();
+            if (!ph.checkPermission(this, permission)) {
+                ph.requestPermission(this, permission, REQUEST_PERMISSION);
+            } else {
+                finish();
+            }
+        } catch (Exception e) {
+            Log.e(getClass().getCanonicalName(), e.toString());
         }
     }
 

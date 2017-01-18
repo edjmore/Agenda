@@ -29,7 +29,7 @@ class Calendar {
         return color;
     }
 
-    public static Map<Integer, Calendar> getVisibleCalendars(Context context) {
+    public static Map<Long, Calendar> getVisibleCalendars(Context context) {
         String[] projecton = new String[]{
                 CalendarContract.Calendars._ID,
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
@@ -42,13 +42,13 @@ class Calendar {
         Cursor cursor =
                 context.getContentResolver()
                         .query(CalendarContract.Calendars.CONTENT_URI, projecton, selection, selectionArgs, null);
-        Map<Integer, Calendar> idToCalendarMap = new HashMap<>();
+        Map<Long, Calendar> idToCalendarMap = new HashMap<>();
         if (cursor == null) {
             return idToCalendarMap;
         }
 
         while (cursor.moveToNext()) {
-            int id = cursor.getInt(0);
+            long id = cursor.getLong(0);
             String displayName = cursor.getString(1);
             int color = cursor.getInt(2);
             idToCalendarMap.put(id, new Calendar(displayName, color));

@@ -15,6 +15,7 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.ifthenelse.ejmoore2.agenda.R;
+import com.ifthenelse.ejmoore2.agenda.view.ConfigActivity;
 
 import java.util.Locale;
 
@@ -30,16 +31,26 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for (int widgetId : appWidgetIds) {
 
+            /* Initial widget setup, linking update service and initializing views. */
             Intent serviceIntent = new Intent(context, AgendaWidgetService.class);
             serviceIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
 
             RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget);
             rv.setRemoteAdapter(R.id.listview_days, serviceIntent);
+            rv.setEmptyView(R.id.listview_days, R.id.empty_view);
+
+            // Setup settings button on widget to open configuration activity.
+            Intent openConfigIntent = new Intent(context, ConfigActivity.class)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(context, 0, openConfigIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            rv.setOnClickPendingIntent(R.id.button_open_config, pendingIntent);
 
             AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
             widgetManager.updateAppWidget(widgetId, rv);
         }
 
+        /* Setup a repeating alarm to update the widget content every ~15 minutes. */
         Intent intent = new Intent(context, AgendaWidgetProvider.class);
         String updateAgendaAction = context.getString(R.string.action_agenda_update);
         intent.setAction(updateAgendaAction);

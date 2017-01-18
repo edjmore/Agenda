@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Agenda</string>
 
+    <string name="empty_text">There\'s nothing on your agenda</string>
+
     <string name="save_config">Save Configuration</string>
 
     <string name="action_agenda_update">com.ifthenelse.ejmoore2.agenda.ACTION_AGENDA_UPDATE</string>
@@ -10,4 +12,13 @@
     <string name="pure_bolditalic">Nokia-Pure-BoldItalic.ttf</string>
     <string name="pure_italic">Nokia-Pure-Italic.ttf</string>
     <string name="pure_regular">Nokia-Pure-Regular.ttf</string>
+
+    <string name="config_time_period_title">Agenda time period</string>
+    <string name="one_day">One day</string>
+    <string name="one_week">One week</string>
+    <string name="two_weeks">Two weeks</string>
+    <string name="one_month">One month</string>
+
+    <!-- Keys for the config manager. -->
+    <string name="config_time_period_key">config_time_period_key</string>
 </resources>

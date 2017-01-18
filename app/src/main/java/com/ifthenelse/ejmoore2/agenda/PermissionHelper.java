@@ -1,11 +1,13 @@
 package com.ifthenelse.ejmoore2.agenda;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -32,13 +34,18 @@ public class PermissionHelper {
 
     public void notifyUserOfMissingPermission(Context context, String permission) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.mipmap.calendar)
                 .setContentTitle("Missing permission")
                 .setContentText("Tap to view")
+                .setDefaults(Notification.DEFAULT_ALL)
                 .setAutoCancel(true);
+        if (Build.VERSION.SDK_INT >= 16) {
+            builder.setPriority(Notification.PRIORITY_MAX); // banner popup
+        }
 
-        Intent intent = new Intent(context, PermissionActivity.class);
-        intent.putExtra(EXTRA_PERMISSION, permission);
+        Intent intent = new Intent(context, PermissionActivity.class)
+                .putExtra(EXTRA_PERMISSION, permission)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         // Artificial back-stack ensures backing out of
         // permission activity will bring user to home screen.

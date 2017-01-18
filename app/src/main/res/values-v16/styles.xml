@@ -2,25 +2,6 @@
 <resources>
 
     <style name="AppTheme.Text" parent="AppTheme">
-        <item name="android:fontFamily">sans-serif</item>
-    </style>
-
-    <style name="AppTheme.Text.Title" parent="AppTheme.Text">
-        <item name="android:textSize">@dimen/text_title</item>
-        <item name="android:textColor">@color/text_title</item>
-
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="AppTheme.Text.Subtitle" parent="AppTheme.Text">
-        <item name="android:textSize">@dimen/text_subtitle</item>
-        <item name="android:textColor">@color/text_subtitle</item>
-
         <item name="android:fontFamily">sans-serif-light</item>
-    </style>
-
-    <style name="AppTheme.Text.Headline" parent="AppTheme.Text">
-        <item name="android:textSize">@dimen/text_headline</item>
-        <item name="android:textColor">@color/text_headline</item>
     </style>
 </resources>

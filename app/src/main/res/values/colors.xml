@@ -7,4 +7,8 @@
     <color name="text_title">#FFFFFF</color>
     <color name="text_subtitle">#B3FFFFFF</color>
     <color name="text_headline">@color/text_title</color>
+
+    <color name="text_title_dark">#FF000000</color>
+    <color name="text_subtitle_dark">#B3000000</color>
+    <color name="text_headline_dark">@color/text_title_dark</color>
 </resources>

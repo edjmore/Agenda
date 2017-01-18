@@ -50,7 +50,7 @@ class Event {
         return color != NO_COLOR ? color : getCalendar().getColor();
     }
 
-    static Event getById(Context context, long id, Map<Integer, Calendar> idToCalendarMap) {
+    static Event getById(Context context, long id, Map<Long, Calendar> idToCalendarMap) {
         //noinspection MissingPermission
         Cursor cursor =
                 context.getContentResolver()
@@ -60,16 +60,16 @@ class Event {
         }
 
         cursor.moveToFirst();
-        int calendarId = cursor.getInt(0);
+        long calendarId = cursor.getLong(0);
         String title = cursor.getString(1);
         int color = cursor.isNull(2) ? NO_COLOR : cursor.getInt(2);
+        cursor.close();
 
         Calendar calendar = idToCalendarMap.get(calendarId);
         if (calendar == null) {
             return null;
         }
 
-        cursor.close();
         return new Event(id, title, color, calendar);
     }
 }

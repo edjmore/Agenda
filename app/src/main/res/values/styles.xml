@@ -15,6 +15,7 @@
     <style name="AppTheme.Text.Title" parent="AppTheme.Text">
         <item name="android:textSize">@dimen/text_title</item>
         <item name="android:textColor">@color/text_title</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="AppTheme.Text.Subtitle" parent="AppTheme.Text">
@@ -25,5 +26,17 @@
     <style name="AppTheme.Text.Headline" parent="AppTheme.Text">
         <item name="android:textSize">@dimen/text_headline</item>
         <item name="android:textColor">@color/text_headline</item>
+    </style>
+
+    <style name="AppTheme.Text.Title.Dark" parent="AppTheme.Text.Title">
+        <item name="android:textColor">@color/text_title_dark</item>
+    </style>
+
+    <style name="AppTheme.Text.Subtitle.Dark" parent="AppTheme.Text.Subtitle">
+        <item name="android:textColor">@color/text_subtitle_dark</item>
+    </style>
+
+    <style name="AppTheme.Text.Headline.Dark" parent="AppTheme.Text.Headline">
+        <item name="android:textColor">@color/text_headline_dark</item>
     </style>
 </resources>

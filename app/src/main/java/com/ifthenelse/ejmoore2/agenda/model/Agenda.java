@@ -22,9 +22,9 @@ import java.util.Map;
 
 public class Agenda {
 
-    public static long ONE_DAY = 1000 * 60 * 60 * 24;
-    public static long ONE_WEEK = ONE_DAY * 7;
-    public static long ONE_MONTH = ONE_DAY * 31;
+    public static final long ONE_DAY = 1000 * 60 * 60 * 24;
+    public static final long ONE_WEEK = ONE_DAY * 7;
+    public static final long ONE_MONTH = ONE_DAY * 31;
 
     public class Day {
         private List<Instance> instances;
@@ -122,7 +122,7 @@ public class Agenda {
 
         // One-to-many relationship from events to instances, and from calendars to events.
         Map<Long, Event> idToEventMap = new HashMap<>();
-        Map<Integer, Calendar> idToCalendarMap = Calendar.getVisibleCalendars(context);
+        Map<Long, Calendar> idToCalendarMap = Calendar.getVisibleCalendars(context);
 
         /* Construct instance objects from the cursor, fetching event data as needed. */
         while (cursor.moveToNext()) {

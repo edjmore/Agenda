@@ -5,9 +5,12 @@ import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
+import com.ifthenelse.ejmoore2.agenda.ArtStudent;
+import com.ifthenelse.ejmoore2.agenda.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.PermissionHelper;
 import com.ifthenelse.ejmoore2.agenda.R;
 import com.ifthenelse.ejmoore2.agenda.model.Agenda;
@@ -37,6 +40,7 @@ public class AgendaWidgetService extends RemoteViewsService {
         private int widgetId;
 
         private PermissionHelper ph;
+        private ConfigManager configManager;
 
         private Agenda agenda;
 
@@ -45,6 +49,7 @@ public class AgendaWidgetService extends RemoteViewsService {
             this.widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
             this.ph = new PermissionHelper();
+            this.configManager = new ConfigManager(context, widgetId);
             this.agenda = Agenda.empty();
         }
 
@@ -70,7 +75,7 @@ public class AgendaWidgetService extends RemoteViewsService {
             // Set date indicator (e.g. "Tuesday, July 3")
             Agenda.Day day = agenda.getDays()[position];
             Date date = day.getDate();
-            String dateString = SDF.format(date);
+            String dateString = getRelativeDateString(date);
             rv.setTextViewText(R.id.day_text, dateString);
 
             // List view items are recycled, so the inner layout may not be empty.
@@ -80,14 +85,18 @@ public class AgendaWidgetService extends RemoteViewsService {
             for (Instance instance : day.getInstances()) {
                 RemoteViews listItem = new RemoteViews(getPackageName(), R.layout.listitem_event);
 
-                // Set event title and subtitle (e.g. "Going shopping\n3:00 PM")
+                /* Set event title and subtitle (e.g. "Going shopping\n3:00 PM"),
+                 * and also add the little colored circle corresponding to event color. */
                 String title = instance.getTitle();
-                int color = instance.getColor();
-                Date time = new Date(instance.getBeginTime());
-                String timeString = STF.format(time);
                 listItem.setTextViewText(R.id.event_title_text, title);
-                listItem.setTextColor(R.id.event_title_text, color);
-                listItem.setTextViewText(R.id.event_subtitle_text, timeString);
+
+                Date time = new Date(instance.getBeginTime());
+                String subtitle = STF.format(time);
+                listItem.setTextViewText(R.id.event_subtitle_text, subtitle);
+
+                int color = instance.getColor();
+                Bitmap coloredCircle = ArtStudent.getInstance(context).getColoredCircle(color);
+                listItem.setImageViewBitmap(R.id.event_color_indicator, coloredCircle);
 
                 // We generate a unique action for each intent b/c otherwise the
                 // system will merge all pending intents into one. The action string
@@ -136,10 +145,28 @@ public class AgendaWidgetService extends RemoteViewsService {
 
         private void refreshAgenda() {
             if (ph.checkPermission(context, Manifest.permission.READ_CALENDAR)) {
-                agenda = Agenda.getAgendaForPeriod(context, Agenda.ONE_WEEK);
+                long timePeriod =
+                        configManager.getLong(R.string.config_time_period_key, Agenda.ONE_WEEK);
+                agenda = Agenda.getAgendaForPeriod(context, timePeriod);
             } else {
                 ph.notifyUserOfMissingPermission(context, Manifest.permission.READ_CALENDAR);
             }
+        }
+
+        private String getRelativeDateString(Date date) {
+            String dateString = SDF.format(date);
+
+            long currTime = System.currentTimeMillis();
+            Date today = new Date(currTime),
+                    tomorrow = new Date(currTime + Agenda.ONE_DAY);
+
+            String relativeDateString = dateString;
+            if (SDF.format(today).equals(dateString)) {
+                relativeDateString = "Today";
+            } else if (SDF.format(tomorrow).equals(dateString)) {
+                relativeDateString = "Tomorrow";
+            }
+            return relativeDateString;
         }
     }
 }

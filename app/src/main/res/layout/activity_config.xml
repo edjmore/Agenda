@@ -10,11 +10,65 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.ifthenelse.ejmoore2.agenda.view.ConfigActivity">
 
-    <Button
-        android:id="@+id/save_config_button"
+    <TextView
+        android:id="@+id/time_period_title"
+        style="@style/AppTheme.Text.Title.Dark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:padding="@dimen/headline_margin"
+        android:text="@string/config_time_period_title" />
+
+    <RadioGroup
+        android:id="@+id/rgroup_time_period"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/time_period_title"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/rgroup_inset"
+        android:paddingStart="@dimen/rgroup_inset">
+
+        <RadioButton
+            android:id="@+id/rbutton_one_day"
+            style="@style/AppTheme.Text.Subtitle.Dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClick"
+            android:text="@string/one_day" />
+
+        <RadioButton
+            android:id="@+id/rbutton_one_week"
+            style="@style/AppTheme.Text.Subtitle.Dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClick"
+            android:text="@string/one_week" />
+
+        <RadioButton
+            android:id="@+id/rbutton_two_weeks"
+            style="@style/AppTheme.Text.Subtitle.Dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClick"
+            android:text="@string/two_weeks" />
+
+        <RadioButton
+            android:id="@+id/rbutton_one_month"
+            style="@style/AppTheme.Text.Subtitle.Dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClick"
+            android:text="@string/one_month" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/save_config_button"
+        style="@style/AppTheme.Text.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@color/colorAccent"
         android:onClick="onClick"
+        android:padding="@dimen/button_padding"
         android:text="@string/save_config" />
 </RelativeLayout>
