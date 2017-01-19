@@ -11,7 +11,6 @@ import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import com.ifthenelse.ejmoore2.agenda.view.ConfigActivity;
 
@@ -36,15 +35,12 @@ public class PermissionHelper {
     public void notifyUserOfMissingPermission(Context context, String permission) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.calendar)
-                .setContentTitle("Missing permission")
+                .setContentTitle("\"Agenda\" is missing a permission")
                 .setContentText("Tap to view")
-                .setDefaults(Notification.DEFAULT_ALL)
                 .setAutoCancel(true);
         if (Build.VERSION.SDK_INT >= 16) {
             builder.setPriority(Notification.PRIORITY_MAX); // banner popup
         }
-
-        Log.e(getClass().getCanonicalName(), "SENDING PERMISSION NOTIFICATION");
 
         Intent intent = new Intent(context, ConfigActivity.class)
                 .putExtra(EXTRA_PERMISSION, permission);

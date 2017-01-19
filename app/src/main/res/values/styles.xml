@@ -15,7 +15,7 @@
     <style name="AppTheme.Text.Title" parent="AppTheme.Text">
         <item name="android:textSize">@dimen/text_title</item>
         <item name="android:textColor">@color/text_title</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <style name="AppTheme.Text.Subtitle" parent="AppTheme.Text">

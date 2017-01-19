@@ -3,7 +3,10 @@
     android:id="@+id/event_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/listitem_event_margin">
+    android:paddingBottom="@dimen/listitem_event_margin"
+    android:paddingEnd="@dimen/listitem_event_margin"
+    android:paddingRight="@dimen/listitem_event_margin"
+    android:paddingTop="@dimen/listitem_event_margin">
 
     <LinearLayout
         android:id="@+id/event_upper_line"

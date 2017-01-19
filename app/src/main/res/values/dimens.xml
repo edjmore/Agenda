@@ -7,15 +7,15 @@
     <dimen name="icon_button_margin">8dp</dimen>
 
     <dimen name="button_padding">8dp</dimen>
-    <dimen name="config_content_inset">10dp</dimen>
+    <dimen name="config_content_inset">0dp</dimen>
 
     <dimen name="colored_circle_diameter">12dp</dimen>
     <dimen name="colored_circle_margin">6dp</dimen>
     <dimen name="colored_circle_margin_top">9dp</dimen>
 
-    <dimen name="text_subtitle">14sp</dimen>
-    <dimen name="text_title">16sp</dimen>
-    <dimen name="text_headline">20sp</dimen>
+    <dimen name="text_subtitle">15sp</dimen>
+    <dimen name="text_title">17sp</dimen>
+    <dimen name="text_headline">21sp</dimen>
 
     <dimen name="title_margin">4dp</dimen>
     <dimen name="subtitle_margin">2dp</dimen>
