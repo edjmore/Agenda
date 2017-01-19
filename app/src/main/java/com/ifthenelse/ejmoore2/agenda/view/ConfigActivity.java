@@ -9,6 +9,9 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.RemoteViews;
@@ -21,7 +24,7 @@ import com.ifthenelse.ejmoore2.agenda.model.Agenda;
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetProvider;
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetService;
 
-public class ConfigActivity extends AppCompatActivity implements View.OnClickListener {
+public class ConfigActivity extends AppCompatActivity {
 
     private int widgetId;
     private Intent resultValue;
@@ -34,8 +37,54 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config);
 
+        // Setup the action bar with confirm and cancel changes button.
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("Configure your agenda");
+        toolbar.setTitleTextAppearance(this, R.style.AppTheme_Text_Headline);
+        toolbar.setNavigationIcon(R.drawable.ic_clear_white_24dp);
+        setSupportActionBar(toolbar);
+
         Intent intent = getIntent();
         handleNewIntent(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.config_activity_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+
+            case R.id.action_item_done:
+                setResult(RESULT_OK, resultValue);
+
+                // Only request a widget update if preference data was changed.
+                if (wasConfigChanged) {
+                    configManager.commitChanges();
+
+                    AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
+                    widgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.listview_days);
+                }
+
+                // Request user permission for calendar access if not already granted; otw close.
+                PermissionHelper ph = new PermissionHelper();
+                String readCalendarPermission = Manifest.permission.READ_CALENDAR;
+                if (!ph.checkPermission(this, readCalendarPermission)) {
+                    ph.requestPermission(this, readCalendarPermission, PermissionHelper.REQUEST_PERMISSION);
+                } else {
+                    finish();
+                }
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -134,28 +183,6 @@ public class ConfigActivity extends AppCompatActivity implements View.OnClickLis
 
             if (configManager.setBoolean(R.string.config_relative_time_key, useRelativeTime)) {
                 wasConfigChanged = true;
-            }
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.save_config_button) {
-            setResult(RESULT_OK, resultValue);
-
-            // Only request a widget update if preference data was changed.
-            if (wasConfigChanged) {
-                AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
-                widgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.listview_days);
-            }
-
-            // Request user permission for calendar access if not already granted; otw close.
-            PermissionHelper ph = new PermissionHelper();
-            String readCalendarPermission = Manifest.permission.READ_CALENDAR;
-            if (!ph.checkPermission(this, readCalendarPermission)) {
-                ph.requestPermission(this, readCalendarPermission, PermissionHelper.REQUEST_PERMISSION);
-            } else {
-                finish();
             }
         }
     }

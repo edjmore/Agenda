@@ -14,10 +14,12 @@ public class ConfigManager {
 
     private Context context;
     private int widgetId;
+    private SharedPreferences.Editor editor;
 
     public ConfigManager(Context context, int widgetId) {
         this.context = context;
         this.widgetId = widgetId;
+        this.editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
     }
 
     public boolean getBoolean(int keyId, boolean defaultValue) {
@@ -48,10 +50,12 @@ public class ConfigManager {
             wasChanged = prefs.getLong(keyString, 0) != value;
         }
 
-        SharedPreferences.Editor editor = prefs.edit();
         editor.putLong(keyString, value);
-        editor.apply();
         return wasChanged;
+    }
+
+    public void commitChanges() {
+        editor.commit();
     }
 
     public static void removeAllConfigsForWidget(Context context, int widgetId) {

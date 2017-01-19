@@ -1,99 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_config"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.ifthenelse.ejmoore2.agenda.view.ConfigActivity">
 
-    <!-- Title and radio group for choosing agenda time period. -->
-    <TextView
-        android:id="@+id/time_period_title"
-        style="@style/AppTheme.Text.Title.Dark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/headline_margin"
-        android:text="@string/config_time_period_title"
-        android:textStyle="normal" />
-
-    <RadioGroup
-        android:id="@+id/rgroup_time_period"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/time_period_title"
-        android:orientation="vertical"
-        android:paddingLeft="@dimen/config_content_inset"
-        android:paddingStart="@dimen/config_content_inset">
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-        <RadioButton
-            android:id="@+id/rbutton_one_day"
-            style="@style/AppTheme.Text.Subtitle.Dark"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin">
+
+        <!-- Title and radio group for choosing agenda time period. -->
+        <TextView
+            android:id="@+id/time_period_title"
+            style="@style/AppTheme.Text.Title.Dark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="onRadioButtonClick"
-            android:text="@string/one_day" />
+            android:padding="@dimen/headline_margin"
+            android:text="@string/config_time_period_title"
+            android:textStyle="normal" />
 
-        <RadioButton
-            android:id="@+id/rbutton_one_week"
-            style="@style/AppTheme.Text.Subtitle.Dark"
+        <RadioGroup
+            android:id="@+id/rgroup_time_period"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/time_period_title"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/config_content_inset"
+            android:paddingStart="@dimen/config_content_inset">
+
+            <RadioButton
+                android:id="@+id/rbutton_one_day"
+                style="@style/AppTheme.Text.Subtitle.Dark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onRadioButtonClick"
+                android:text="@string/one_day" />
+
+            <RadioButton
+                android:id="@+id/rbutton_one_week"
+                style="@style/AppTheme.Text.Subtitle.Dark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onRadioButtonClick"
+                android:text="@string/one_week" />
+
+            <RadioButton
+                android:id="@+id/rbutton_two_weeks"
+                style="@style/AppTheme.Text.Subtitle.Dark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onRadioButtonClick"
+                android:text="@string/two_weeks" />
+
+            <RadioButton
+                android:id="@+id/rbutton_one_month"
+                style="@style/AppTheme.Text.Subtitle.Dark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onRadioButtonClick"
+                android:text="@string/one_month" />
+        </RadioGroup>
+        <!-- End time period config. -->
+
+        <!-- Title and switch for toggling relative time strings. -->
+        <TextView
+            android:id="@+id/event_lower_line_options_title"
+            style="@style/AppTheme.Text.Title.Dark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="onRadioButtonClick"
-            android:text="@string/one_week" />
+            android:layout_below="@+id/rgroup_time_period"
+            android:layout_marginTop="@dimen/headline_margin"
+            android:padding="@dimen/headline_margin"
+            android:text="@string/config_event_lower_line_options_title"
+            android:textStyle="normal" />
 
-        <RadioButton
-            android:id="@+id/rbutton_two_weeks"
-            style="@style/AppTheme.Text.Subtitle.Dark"
+        <Switch
+            android:id="@+id/switch_relative_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="onRadioButtonClick"
-            android:text="@string/two_weeks" />
-
-        <RadioButton
-            android:id="@+id/rbutton_one_month"
-            style="@style/AppTheme.Text.Subtitle.Dark"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onRadioButtonClick"
-            android:text="@string/one_month" />
-    </RadioGroup>
-    <!-- End time period config. -->
-
-    <!-- Title and switch for toggling relative time strings. -->
-    <TextView
-        android:id="@+id/event_lower_line_options_title"
-        style="@style/AppTheme.Text.Title.Dark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/rgroup_time_period"
-        android:layout_marginTop="@dimen/headline_margin"
-        android:padding="@dimen/headline_margin"
-        android:text="@string/config_event_lower_line_options_title"
-        android:textStyle="normal" />
-
-    <Switch
-        android:id="@+id/switch_relative_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/event_lower_line_options_title"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:onClick="onSwitchClick" />
-    <!-- End relative time config. -->
-
-    <Button
-        android:id="@+id/save_config_button"
-        style="@style/AppTheme.Text.Title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:background="@color/colorAccent"
-        android:onClick="onClick"
-        android:padding="@dimen/button_padding"
-        android:text="@string/save_config" />
+            android:layout_alignBaseline="@+id/event_lower_line_options_title"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:onClick="onSwitchClick" />
+        <!-- End relative time config. -->
+    </RelativeLayout>
 </RelativeLayout>
