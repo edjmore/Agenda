@@ -56,6 +56,8 @@ public class Utils {
             return "all day";
         }
 
+        STF.setTimeZone(Calendar.getInstance().getTimeZone());
+
         String beginString = STF.format(new Date(instance.getActualBeginTime()));
         if (instance.getActualBeginTime() == instance.getActualEndTime()) {
             return beginString;
@@ -93,6 +95,7 @@ public class Utils {
     }
 
     private static String getRelativeDateString(Date date, SimpleDateFormat format) {
+        format.setTimeZone(Calendar.getInstance().getTimeZone());
         String dateString = format.format(date);
 
         long currTime = System.currentTimeMillis();
