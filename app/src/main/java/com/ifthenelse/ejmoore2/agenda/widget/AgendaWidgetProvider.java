@@ -15,10 +15,7 @@ import android.widget.Toast;
 
 import com.ifthenelse.ejmoore2.agenda.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.R;
-import com.ifthenelse.ejmoore2.agenda.Utils;
 import com.ifthenelse.ejmoore2.agenda.view.ConfigActivity;
-
-import java.util.Locale;
 
 /**
  * Created by ejmoore2 on 1/15/17.
@@ -88,8 +85,8 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
             String encodedEvent = intent.getAction();
             String[] tokens = encodedEvent.split("-");
             long eventId = Long.parseLong(tokens[0]);
-            long beginTime = Long.parseLong(tokens[1]);
-            long endTime = Long.parseLong(tokens[2]);
+            long actualBeginTime = Long.parseLong(tokens[1]);
+            long actualEndTime = Long.parseLong(tokens[2]);
             String title = "";
             for (int i = 3; i < tokens.length; i++) {
                 // The separating character '-' may have been part of the title.
@@ -103,8 +100,8 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
             Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
             Intent viewEventIntent = new Intent(Intent.ACTION_VIEW)
                     .setData(uri)
-                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, beginTime)
-                    .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endTime)
+                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, actualBeginTime)
+                    .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, actualEndTime)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             /* Double check that there is a calendar app; if not we show a semi-useful message. */
@@ -114,9 +111,8 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
                 context.startActivity(viewEventIntent);
             } else {
 
-                /* Tell the user how long until this event starts (or finishes if in progress). */
-                String finalMsg = String.format(Locale.US, "\"%s\" %s",
-                        title, Utils.getRelativeEventTimeString(beginTime, endTime));
+                /* Let the user know why nothing happened. */
+                String finalMsg = "Error: no calendar application installed";
                 Toast.makeText(context, finalMsg, Toast.LENGTH_SHORT).show();
             }
 

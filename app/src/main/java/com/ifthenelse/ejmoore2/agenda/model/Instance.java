@@ -1,5 +1,7 @@
 package com.ifthenelse.ejmoore2.agenda.model;
 
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -16,19 +18,34 @@ public class Instance {
     private static final Comparator<Instance> COMPARATOR = new Comparator<Instance>() {
         @Override
         public int compare(Instance a, Instance b) {
-            return (int) (a.getBeginTime() - b.getBeginTime());
+            int diff = (int) (a.getActualBeginTime() - b.getActualBeginTime());
+            if (diff == 0) {
+                return a.getTitle().compareTo(b.getTitle());
+            } else {
+                return diff;
+            }
         }
     };
 
     private long beginTime;
     private long endTime;
+    private long actualBeginTime;
+    private long actualEndTime;
 
     private Event event;
 
-    Instance(long beginTime, long endTime, Event event) {
+    Instance(long beginTime, long endTime, long actualBeginTime, Event event) {
+        this(beginTime, endTime, actualBeginTime, endTime, event);
+    }
+
+    Instance(long beginTime, long endTime, long actualBeginTime, long actualEndTime, Event event) {
         this.beginTime = beginTime;
         this.endTime = endTime;
+        this.actualBeginTime = actualBeginTime;
+        this.actualEndTime = actualEndTime;
         this.event = event;
+
+        Log.e("Instance", getTitle() + " " + getStartDateString());
     }
 
     private Event getEvent() {
@@ -41,6 +58,22 @@ public class Instance {
 
     public long getEndTime() {
         return endTime;
+    }
+
+    public long getActualBeginTime() {
+        return actualBeginTime;
+    }
+
+    public long getActualEndTime() {
+        return actualEndTime;
+    }
+
+    public boolean isAllDay() {
+        return getEvent().isAllDay();
+    }
+
+    public boolean isMultiDay() {
+        return getActualEndTime() - getActualBeginTime() > Agenda.ONE_DAY;
     }
 
     public long getEventId() {
@@ -56,7 +89,7 @@ public class Instance {
     }
 
     String getStartDateString() {
-        return SDF.format(new Date(beginTime));
+        return SDF.format(new Date(getBeginTime()));
     }
 
     static SimpleDateFormat getDateFormat() {

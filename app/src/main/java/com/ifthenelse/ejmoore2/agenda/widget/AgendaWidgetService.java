@@ -17,17 +17,13 @@ import com.ifthenelse.ejmoore2.agenda.Utils;
 import com.ifthenelse.ejmoore2.agenda.model.Agenda;
 import com.ifthenelse.ejmoore2.agenda.model.Instance;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 /**
  * Created by ejmoore2 on 1/15/17.
  */
 
 public class AgendaWidgetService extends RemoteViewsService {
-
-    private static final SimpleDateFormat STF = new SimpleDateFormat("hh:mm a", Locale.US);
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
@@ -102,8 +98,8 @@ public class AgendaWidgetService extends RemoteViewsService {
 
                 // Subtitle is either exact time or relative (depending on user preference).
                 String subtitle = !useRelativeTime ?
-                        STF.format(new Date(instance.getBeginTime())) + " - " + STF.format(new Date(instance.getEndTime())) :
-                        Utils.getRelativeEventTimeString(instance.getBeginTime(), instance.getEndTime());
+                        Utils.getExactTimeString(instance) :
+                        Utils.getRelativeEventTimeString(instance);
                 listItem.setTextViewText(R.id.event_subtitle_text, subtitle);
 
                 int color = instance.getColor();
@@ -115,7 +111,7 @@ public class AgendaWidgetService extends RemoteViewsService {
                 // also provides all information necessary to open the correct calendar entry.
                 String uniqueAction =
                         instance.getEventId() + "-" + instance.getBeginTime() + "-" +
-                                instance.getEndTime() + "-" + instance.getTitle();
+                                instance.getActualEndTime() + "-" + instance.getTitle();
 
                 Intent onClickIntent = new Intent(context, AgendaWidgetProvider.class)
                         .setAction(uniqueAction)

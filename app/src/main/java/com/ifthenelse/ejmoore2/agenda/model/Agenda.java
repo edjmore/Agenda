@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
 
+import com.ifthenelse.ejmoore2.agenda.Utils;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Created by edward on 1/16/17.
@@ -128,7 +131,7 @@ public class Agenda {
         while (cursor.moveToNext()) {
             long eventId = cursor.getLong(0);
             long beginTime = cursor.getLong(1);
-            long endTime = cursor.getLong(2);
+            long actualEndTime = cursor.getLong(2);
 
             Event event = idToEventMap.get(eventId);
             if (event == null) {
@@ -143,12 +146,37 @@ public class Agenda {
                 }
             }
 
-            Instance instance = new Instance(beginTime, endTime, event);
+            long actualBeginTime = beginTime;
+            // TODO: All-day events are very strange, should look into this (and timezones in general) further.
+            if (event.isAllDay()) {
+                TimeZone localTz = java.util.Calendar.getInstance().getTimeZone();
+                actualBeginTime = convertToLocalTime(actualBeginTime, localTz);
+                beginTime = actualBeginTime;
+                actualEndTime = convertToLocalTime(actualEndTime, localTz) - 1000;
+            }
+
+            /* Events may span multiple days, in which case we create
+             * a separate instance for each day the event occurs during. */
+            while (actualEndTime - beginTime > ONE_DAY) {
+
+                long dayEndTime = Utils.roundUp(beginTime);
+
+                Instance instance = new Instance(beginTime, dayEndTime, actualBeginTime, actualEndTime, event);
+                agenda.addInstance(instance);
+
+                beginTime = Utils.getTomorrow(dayEndTime);
+            }
+            // Add the final instance (with actual end time).
+            Instance instance = new Instance(beginTime, actualEndTime, actualBeginTime, event);
             agenda.addInstance(instance);
         }
 
         cursor.close();
         return agenda;
+    }
+
+    private static long convertToLocalTime(long time, TimeZone localTz) {
+        return time - localTz.getOffset(time);
     }
 
     public static Agenda empty() {
