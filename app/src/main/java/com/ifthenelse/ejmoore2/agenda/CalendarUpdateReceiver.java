@@ -3,6 +3,7 @@ package com.ifthenelse.ejmoore2.agenda;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetProvider;
 
@@ -13,7 +14,7 @@ public class CalendarUpdateReceiver extends BroadcastReceiver {
         String intentAction = intent.getAction();
 
         if ("android.intent.action.PROVIDER_CHANGED".equals(intentAction)) {
-
+            Log.e("Agenda", "PROVIDER CHANGED");
             /* Calendar has been updated; request a widget refresh. */
             AgendaWidgetProvider.refreshAllWidgets(context);
         }

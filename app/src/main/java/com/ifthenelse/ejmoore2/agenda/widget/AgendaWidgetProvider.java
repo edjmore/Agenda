@@ -11,9 +11,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.CalendarContract;
+import android.util.Log;
 
 import com.ifthenelse.ejmoore2.agenda.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.R;
+import com.ifthenelse.ejmoore2.agenda.UpdateService;
 import com.ifthenelse.ejmoore2.agenda.view.ConfigActivity;
 
 /**
@@ -33,6 +35,9 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
 
             ConfigActivity.performInitialWidgetSetup(context, widgetId);
         }
+
+        Intent updateService = new Intent(context, UpdateService.class);
+        context.startService(updateService);
     }
 
     @Override
@@ -42,6 +47,15 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
             ConfigManager.removeAllConfigsForWidget(context, widgetId);
         }
         super.onDeleted(context, appWidgetIds);
+
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        ComponentName widgetName = new ComponentName(context, AgendaWidgetProvider.class);
+        int[] widgetIds = manager.getAppWidgetIds(widgetName);
+
+        if (widgetIds == null || widgetIds.length == 0) {
+            Intent stopUpdateService = new Intent(context, UpdateService.class);
+            context.stopService(stopUpdateService);
+        }
     }
 
     public static void setNextUpdateAlarmExact(Context context, long alarmTime) {
@@ -77,6 +91,7 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
                 openConfigAction = context.getString(R.string.action_open_config);
 
         if (intent.getAction().equals(updateAgendaAction)) {
+
             // Request view refreshes for all widget IDs.
             refreshAllWidgets(context);
 
@@ -155,6 +170,7 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
     }
 
     public static void refreshAllWidgets(Context context) {
+        Log.e("Agenda", "REFRESHING ALL WIDGETS");
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         ComponentName widgetName = new ComponentName(context, AgendaWidgetProvider.class);
         int[] widgetIds = manager.getAppWidgetIds(widgetName);
