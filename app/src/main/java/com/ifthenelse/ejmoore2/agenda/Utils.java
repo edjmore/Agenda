@@ -120,7 +120,7 @@ public class Utils {
         int mins = (int) ((instance.getActualBeginTime() - currTime) / (1000 * 60));
         String innerMsg = null;
         if (mins > 0) {
-            innerMsg = "begins";
+            innerMsg = instance.getActualBeginTime() == instance.getActualEndTime() ? "occurs" : "begins";
         } else {
             innerMsg = "ends";
             mins = (int) ((instance.getEndTime() - currTime) / (1000 * 60));

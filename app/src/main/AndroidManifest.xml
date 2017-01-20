@@ -42,6 +42,7 @@
                 <data android:host="com.android.calendar" />
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>

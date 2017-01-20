@@ -1,7 +1,5 @@
 package com.ifthenelse.ejmoore2.agenda.model;
 
-import android.util.Log;
-
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -44,8 +42,6 @@ public class Instance {
         this.actualBeginTime = actualBeginTime;
         this.actualEndTime = actualEndTime;
         this.event = event;
-
-        Log.e("Instance", getTitle() + " " + getStartDateString());
     }
 
     private Event getEvent() {

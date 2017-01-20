@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import android.widget.Toast;
 
 import com.ifthenelse.ejmoore2.agenda.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.R;
@@ -23,7 +22,10 @@ import com.ifthenelse.ejmoore2.agenda.view.ConfigActivity;
 
 public class AgendaWidgetProvider extends AppWidgetProvider {
 
+    public static final String ACTION_VIEW_DATE = "com.droid.mooresoft.agenda.ACTION_VIEW_DATE";
+
     public static final String EXTRA_ACTION = "extra_action";
+    public static final String EXTRA_DATE = "extra_date";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -43,7 +45,7 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
     }
 
     public static void setNextUpdateAlarmExact(Context context, long alarmTime) {
-        PendingIntent pendingIntent = getUpdateAlarmIntent(context);
+        PendingIntent pendingIntent = getUpdateAlarmIntent(context, -2);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC, alarmTime, pendingIntent);
     }
@@ -53,18 +55,18 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
     }
 
     private static void setNextUpdateAlarmInexact(Context context, long firstAlarm) {
-        PendingIntent pendingIntent = getUpdateAlarmIntent(context);
+        PendingIntent pendingIntent = getUpdateAlarmIntent(context, -1);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.RTC, firstAlarm,
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES / 3, pendingIntent);
     }
 
-    private static PendingIntent getUpdateAlarmIntent(Context context) {
+    private static PendingIntent getUpdateAlarmIntent(Context context, int requestCode) {
         Intent intent = new Intent(context, AgendaWidgetProvider.class);
         String updateAgendaAction = context.getString(R.string.action_agenda_update);
         intent.setAction(updateAgendaAction);
 
-        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     @Override
@@ -75,7 +77,6 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
                 openConfigAction = context.getString(R.string.action_open_config);
 
         if (intent.getAction().equals(updateAgendaAction)) {
-
             // Request view refreshes for all widget IDs.
             refreshAllWidgets(context);
 
@@ -112,9 +113,22 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
             } else {
 
                 /* Let the user know why nothing happened. */
-                String finalMsg = "Error: no calendar application installed";
-                Toast.makeText(context, finalMsg, Toast.LENGTH_SHORT).show();
+                //String finalMsg = "Error: no calendar application installed";
+                //Toast.makeText(context, finalMsg, Toast.LENGTH_SHORT).show();
             }
+
+        } else if (ACTION_VIEW_DATE.equals(intent.getAction())) {
+
+            long dateMillis = intent.getLongExtra(EXTRA_DATE, System.currentTimeMillis());
+            Uri.Builder builder = CalendarContract.CONTENT_URI.buildUpon();
+            builder.appendPath("time");
+            ContentUris.appendId(builder, dateMillis);
+
+            Intent viewIntent = new Intent(Intent.ACTION_VIEW)
+                    .setData(builder.build())
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            context.startActivity(viewIntent);
 
         } else if (editNewEventAction.equals(intent.getAction())) {
 

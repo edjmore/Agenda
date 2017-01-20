@@ -149,10 +149,18 @@ public class ConfigActivity extends AppCompatActivity {
                 PendingIntent.getBroadcast(context, 0, newEventIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         rv.setOnClickPendingIntent(R.id.button_new_event, pendingIntent);
 
+        // Setup intent template for individual list items (days).
+        Intent viewDateIntent = new Intent(context, AgendaWidgetProvider.class)
+                .setAction(AgendaWidgetProvider.ACTION_VIEW_DATE)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+        PendingIntent viewDatePendingIntent =
+                PendingIntent.getBroadcast(context, 3, viewDateIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        rv.setPendingIntentTemplate(R.id.listview_days, viewDatePendingIntent);
+
         AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
         widgetManager.updateAppWidget(widgetId, rv);
 
-        /* Setup a repeating alarm to update the widget content every ~15 minutes. */
+        /* Setup a repeating alarm to update the widget content every ~5 minutes. */
         AgendaWidgetProvider.setNextUpdateAlarmInexact(context);
     }
 

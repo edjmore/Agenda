@@ -75,7 +75,10 @@ public class AgendaWidgetService extends RemoteViewsService {
             String dateString = Utils.getRelativeDateString(date);
             rv.setTextViewText(R.id.day_text, dateString);
 
-            // TODO: Day click should bring user to that day in the calendar application.
+            // Day click will bring user to that day in the calendar application.
+            Intent fillInIntent = new Intent()
+                    .putExtra(AgendaWidgetProvider.EXTRA_DATE, date.getTime());
+            rv.setOnClickFillInIntent(R.id.day_text, fillInIntent);
 
             // List view items are recycled, so the inner layout may not be empty.
             rv.removeAllViews(R.id.linearlayout_events);
