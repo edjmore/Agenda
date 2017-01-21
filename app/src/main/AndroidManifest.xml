@@ -3,6 +3,7 @@
     package="com.ifthenelse.ejmoore2.agenda">
 
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -46,7 +47,17 @@
         <service
             android:name=".UpdateService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <receiver
+            android:name=".UpdateServiceReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.droid.mooresoft.agenda.ACTION_RESTART_UPDATE_SERVICE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

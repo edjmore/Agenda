@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import android.util.Log;
 
 import com.ifthenelse.ejmoore2.agenda.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.R;
@@ -170,7 +169,6 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
     }
 
     public static void refreshAllWidgets(Context context) {
-        Log.e("Agenda", "REFRESHING ALL WIDGETS");
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         ComponentName widgetName = new ComponentName(context, AgendaWidgetProvider.class);
         int[] widgetIds = manager.getAppWidgetIds(widgetName);
