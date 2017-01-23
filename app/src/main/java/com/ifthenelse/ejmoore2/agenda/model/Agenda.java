@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
+import android.support.annotation.NonNull;
 
 import com.ifthenelse.ejmoore2.agenda.Utils;
 
@@ -12,7 +13,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +29,10 @@ public class Agenda {
     public static final long ONE_WEEK = ONE_DAY * 7;
     public static final long ONE_MONTH = ONE_DAY * 31;
 
-    public class Day {
+    /**
+     * The Day class holds a list of Instances for a given date in the Agenda.
+     */
+    public class Day implements Comparable {
         private List<Instance> instances;
         private Instance[] sortedInstances;
 
@@ -38,10 +41,13 @@ public class Agenda {
             this.sortedInstances = null;
         }
 
-        public Instance[] getInstances() {
+        /**
+         * @return An Instance array sorted chronologically from earliest to latest.
+         */
+        public Instance[] getSortedInstances() {
             if (sortedInstances == null) {
                 sortedInstances = instances.toArray(new Instance[instances.size()]);
-                Arrays.sort(sortedInstances, Instance.getComparator());
+                Arrays.sort(sortedInstances);
             }
             return sortedInstances;
         }
@@ -49,6 +55,19 @@ public class Agenda {
         private void addInstance(Instance instance) {
             instances.add(instance);
             sortedInstances = null;
+        }
+
+        private long getTimestamp() {
+            return instances.isEmpty() ? 0 : Utils.roundDown(getSortedInstances()[0].getBeginTime());
+        }
+
+        @Override
+        public int compareTo(@NonNull Object obj) {
+            if (obj instanceof Day) {
+                Day other = (Day) obj;
+                return (int) (this.getTimestamp() - other.getTimestamp());
+            }
+            return 0;
         }
 
         private String getDateString() {
@@ -70,14 +89,7 @@ public class Agenda {
         }
     }
 
-    private static final Comparator<Day> DAY_COMPARATOR = new Comparator<Day>() {
-        @Override
-        public int compare(Day a, Day b) {
-            return a.getDate().compareTo(b.getDate());
-        }
-    };
-
-    private Map<String, Day> dateToDayMap;
+    private Map<Long, Day> dateToDayMap;
     private Day[] sortedDays;
 
     private Agenda() {
@@ -85,16 +97,23 @@ public class Agenda {
         this.sortedDays = null;
     }
 
-    public Day[] getDays() {
+    /**
+     * @return A Day array sorted chronologically from earliest to latest.
+     */
+    public Day[] getSortedDays() {
         if (sortedDays == null) {
             sortedDays = dateToDayMap.values().toArray(new Day[dateToDayMap.size()]);
-            Arrays.sort(sortedDays, DAY_COMPARATOR);
+            Arrays.sort(sortedDays);
         }
         return sortedDays;
     }
 
+    /**
+     * Adds the given Instance to the Agenda by finding
+     * the correct Day for the Instance and adding it there.
+     */
     private void addInstance(Instance instance) {
-        String date = instance.getStartDateString();
+        long date = Utils.roundDown(instance.getBeginTime());
         Day day = dateToDayMap.get(date);
         if (day == null) {
             day = new Day();
@@ -127,11 +146,11 @@ public class Agenda {
         Map<Long, Event> idToEventMap = new HashMap<>();
         Map<Long, Calendar> idToCalendarMap = Calendar.getVisibleCalendars(context);
 
-        /* Construct instance objects from the cursor, fetching event data as needed. */
+        /* Construct Instance objects from the cursor, fetching Event data as needed. */
         while (cursor.moveToNext()) {
             long eventId = cursor.getLong(0);
-            long beginTime = cursor.getLong(1);
-            long actualEndTime = cursor.getLong(2);
+            long trueBeginTime = cursor.getLong(1);
+            long trueEndTime = cursor.getLong(2);
 
             Event event = idToEventMap.get(eventId);
             if (event == null) {
@@ -146,28 +165,29 @@ public class Agenda {
                 }
             }
 
-            long actualBeginTime = beginTime;
-            // TODO: All-day events are very strange, should look into this (and timezones in general) further.
+            // TODO: This code may be unnecessary??
+            /*long actualBeginTime = trueBeginTime;
             if (event.isAllDay()) {
                 TimeZone localTz = java.util.Calendar.getInstance().getTimeZone();
                 actualBeginTime = convertToLocalTime(actualBeginTime, localTz);
-                beginTime = actualBeginTime;
-                actualEndTime = convertToLocalTime(actualEndTime, localTz) - 1000;
-            }
+                trueBeginTime = actualBeginTime;
+                trueEndTime = convertToLocalTime(trueEndTime, localTz) - 1000;
+            } */
 
             /* Events may span multiple days, in which case we create
              * a separate instance for each day the event occurs during. */
-            while (actualEndTime - beginTime > ONE_DAY) {
+            long beginTime = trueBeginTime;
+            long endTime;
+            while (trueEndTime - beginTime > ONE_DAY) {
+                endTime = Utils.roundUp(trueBeginTime);
 
-                long dayEndTime = Utils.roundUp(beginTime);
-
-                Instance instance = new Instance(beginTime, dayEndTime, actualBeginTime, actualEndTime, event);
+                Instance instance = new Instance(beginTime, endTime, trueBeginTime, trueEndTime, event);
                 agenda.addInstance(instance);
 
-                beginTime = Utils.getTomorrow(dayEndTime);
+                beginTime = Utils.getTomorrow(endTime);
             }
-            // Add the final instance (with actual end time).
-            Instance instance = new Instance(beginTime, actualEndTime, actualBeginTime, event);
+            // Add the final instance (with true end time).
+            Instance instance = new Instance(beginTime, trueEndTime, trueBeginTime, trueEndTime, event);
             agenda.addInstance(instance);
         }
 

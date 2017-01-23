@@ -22,6 +22,7 @@ class Event {
     };
     private static final String SELECTION = CalendarContract.Events._ID + " = ?";
 
+    // If the "color" field is set to NO_COLOR the Event color will be used.
     private static final int NO_COLOR = -1;
 
     private long id;
@@ -32,21 +33,17 @@ class Event {
 
     private Calendar calendar;
 
-    private Event(long id, String title, int color, Calendar calendar, boolean isAllDay, String timezone) {
+    private Event(long id, String title, int color, boolean isAllDay, String timezone, Calendar calendar) {
         this.id = id;
         this.title = title;
         this.color = color;
-        this.calendar = calendar;
         this.isAllDay = isAllDay;
         this.timezone = timezone;
+        this.calendar = calendar;
     }
 
     public long getId() {
         return id;
-    }
-
-    public Calendar getCalendar() {
-        return calendar;
     }
 
     public String getTitle() {
@@ -61,11 +58,22 @@ class Event {
         return isAllDay;
     }
 
-    TimeZone getTimezone() {
-        TimeZone tz = TimeZone.getTimeZone(timezone);
-        return tz;
+    public Calendar getCalendar() {
+        return calendar;
     }
 
+    TimeZone getTimezone() {
+        return TimeZone.getTimeZone(timezone);
+    }
+
+    /**
+     * Returns the Event with the given ID, or null if:
+     * (1) the event doesn't exist
+     * (2) the event exists but is part of a hidden calendar
+     *
+     * @param id              The event ID to look for.
+     * @param idToCalendarMap A mapping of all visible calendars.
+     */
     static Event getById(Context context, long id, Map<Long, Calendar> idToCalendarMap) {
         //noinspection MissingPermission
         Cursor cursor =
@@ -88,6 +96,6 @@ class Event {
             return null;
         }
 
-        return new Event(id, title, color, calendar, isAllDay, timezone);
+        return new Event(id, title, color, isAllDay, timezone, calendar);
     }
 }

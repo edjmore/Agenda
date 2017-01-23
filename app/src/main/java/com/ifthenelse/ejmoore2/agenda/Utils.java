@@ -58,15 +58,15 @@ public class Utils {
 
         STF.setTimeZone(Calendar.getInstance().getTimeZone());
 
-        String beginString = STF.format(new Date(instance.getActualBeginTime()));
-        if (instance.getActualBeginTime() == instance.getActualEndTime()) {
+        String beginString = STF.format(new Date(instance.getTrueBeginTime()));
+        if (instance.getTrueBeginTime() == instance.getTrueEndTime()) {
             return beginString;
         } else {
             if (instance.isMultiDay()) {
                 // Need to give the date as well as time since instance spans multiple days.
-                Date actualEndDate = new Date(instance.getActualEndTime());
+                Date actualEndDate = new Date(instance.getTrueEndTime());
                 return String.format(Locale.US, "%s (%s) - %s (%s)",
-                        beginString, Utils.getRelativeDateString(new Date(instance.getActualBeginTime()), true).toLowerCase(),
+                        beginString, Utils.getRelativeDateString(new Date(instance.getTrueBeginTime()), true).toLowerCase(),
                         STF.format(actualEndDate), Utils.getRelativeDateString(actualEndDate, true).toLowerCase());
             }
 
@@ -120,10 +120,10 @@ public class Utils {
         }
 
         long currTime = System.currentTimeMillis();
-        int mins = (int) ((instance.getActualBeginTime() - currTime) / (1000 * 60));
+        int mins = (int) ((instance.getTrueBeginTime() - currTime) / (1000 * 60));
         String innerMsg = null;
         if (mins > 0) {
-            innerMsg = instance.getActualBeginTime() == instance.getActualEndTime() ? "occurs" : "begins";
+            innerMsg = instance.getTrueBeginTime() == instance.getTrueEndTime() ? "occurs" : "begins";
         } else {
             innerMsg = "ends";
             mins = (int) ((instance.getEndTime() - currTime) / (1000 * 60));
@@ -131,7 +131,7 @@ public class Utils {
             // If the event is multi-day we just say the day it will end.
             if (instance.isMultiDay()) {
                 return innerMsg + " " +
-                        Utils.getRelativeDateString(new Date(instance.getActualEndTime()), true).toLowerCase();
+                        Utils.getRelativeDateString(new Date(instance.getTrueEndTime()), true).toLowerCase();
             }
         }
 

@@ -16,7 +16,7 @@ class Calendar {
     private String displayName;
     private int color;
 
-    Calendar(String displayName, int color) {
+    private Calendar(String displayName, int color) {
         this.displayName = displayName;
         this.color = color;
     }
@@ -29,7 +29,12 @@ class Calendar {
         return color;
     }
 
-    public static Map<Long, Calendar> getVisibleCalendars(Context context) {
+    /**
+     * Queries the CalendarProvider for all calendars the user has set to visible.
+     *
+     * @return A mapping from calendar ID to calendar objects.
+     */
+    static Map<Long, Calendar> getVisibleCalendars(Context context) {
         String[] projecton = new String[]{
                 CalendarContract.Calendars._ID,
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,

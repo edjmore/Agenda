@@ -52,7 +52,7 @@ public class AgendaWidgetService extends RemoteViewsService {
 
         @Override
         public int getCount() {
-            return agenda.getDays().length;
+            return agenda.getSortedDays().length;
         }
 
         @Override
@@ -70,7 +70,7 @@ public class AgendaWidgetService extends RemoteViewsService {
             RemoteViews rv = new RemoteViews(getPackageName(), R.layout.listitem_day);
 
             // Set date indicator (e.g. "Tuesday, July 3")
-            Agenda.Day day = agenda.getDays()[position];
+            Agenda.Day day = agenda.getSortedDays()[position];
             Date date = day.getDate();
             String dateString = Utils.getRelativeDateString(date);
             rv.setTextViewText(R.id.day_text, dateString);
@@ -84,8 +84,8 @@ public class AgendaWidgetService extends RemoteViewsService {
             rv.removeAllViews(R.id.linearlayout_events);
 
             /* Construct an inner list view by appending views to the linear layout. */
-            for (int i = 0; i < day.getInstances().length; i++) {
-                Instance instance = day.getInstances()[i];
+            for (int i = 0; i < day.getSortedInstances().length; i++) {
+                Instance instance = day.getSortedInstances()[i];
                 // For the first instance on the agenda, we set an alarm to update the
                 // widget after the event ends (i.e. to remove this instance from view).
                 if (position == 0 && i == 0) {
@@ -114,7 +114,7 @@ public class AgendaWidgetService extends RemoteViewsService {
                 // also provides all information necessary to open the correct calendar entry.
                 String uniqueAction =
                         instance.getEventId() + "-" + instance.getBeginTime() + "-" +
-                                instance.getActualEndTime() + "-" + instance.getTitle();
+                                instance.getTrueEndTime() + "-" + instance.getTitle();
 
                 Intent onClickIntent = new Intent(context, AgendaWidgetProvider.class)
                         .setAction(uniqueAction)
