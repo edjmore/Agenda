@@ -13,7 +13,7 @@ import com.ifthenelse.ejmoore2.agenda.ArtStudent;
 import com.ifthenelse.ejmoore2.agenda.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.PermissionHelper;
 import com.ifthenelse.ejmoore2.agenda.R;
-import com.ifthenelse.ejmoore2.agenda.Utils;
+import com.ifthenelse.ejmoore2.agenda.DatetimeUtils;
 import com.ifthenelse.ejmoore2.agenda.model.Agenda;
 import com.ifthenelse.ejmoore2.agenda.model.Instance;
 
@@ -72,7 +72,7 @@ public class AgendaWidgetService extends RemoteViewsService {
             // Set date indicator (e.g. "Tuesday, July 3")
             Agenda.Day day = agenda.getSortedDays()[position];
             Date date = day.getDate();
-            String dateString = Utils.getRelativeDateString(date);
+            String dateString = DatetimeUtils.getDateString(day, false);
             rv.setTextViewText(R.id.day_text, dateString);
 
             // Day click will bring user to that day in the calendar application.
@@ -86,12 +86,6 @@ public class AgendaWidgetService extends RemoteViewsService {
             /* Construct an inner list view by appending views to the linear layout. */
             for (int i = 0; i < day.getSortedInstances().length; i++) {
                 Instance instance = day.getSortedInstances()[i];
-                // For the first instance on the agenda, we set an alarm to update the
-                // widget after the event ends (i.e. to remove this instance from view).
-                if (position == 0 && i == 0) {
-                    AgendaWidgetProvider.setNextUpdateAlarmExact(context, instance.getEndTime());
-                }
-
                 RemoteViews listItem = new RemoteViews(getPackageName(), R.layout.listitem_event);
 
                 /* Set event title and subtitle (e.g. "Going shopping\n3:00 PM"),
@@ -100,9 +94,7 @@ public class AgendaWidgetService extends RemoteViewsService {
                 listItem.setTextViewText(R.id.event_title_text, title);
 
                 // Subtitle is either exact time or relative (depending on user preference).
-                String subtitle = !useRelativeTime ?
-                        Utils.getExactTimeString(instance) :
-                        Utils.getRelativeEventTimeString(instance);
+                String subtitle = DatetimeUtils.getTimeString(instance, useRelativeTime);
                 listItem.setTextViewText(R.id.event_subtitle_text, subtitle);
 
                 int color = instance.getColor();
@@ -157,7 +149,7 @@ public class AgendaWidgetService extends RemoteViewsService {
         private void refreshAgenda() {
             if (ph.checkPermission(context, Manifest.permission.READ_CALENDAR)) {
                 long timePeriod =
-                        configManager.getLong(R.string.config_time_period_key, Agenda.ONE_WEEK);
+                        configManager.getLong(R.string.config_time_period_key, DatetimeUtils.ONE_WEEK);
                 agenda = Agenda.getAgendaForPeriod(context, timePeriod);
                 useRelativeTime = configManager.getBoolean(R.string.config_relative_time_key, false);
             } else {

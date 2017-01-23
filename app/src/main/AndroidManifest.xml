@@ -50,7 +50,7 @@
             android:exported="true" />
 
         <receiver
-            android:name=".UpdateServiceReceiver"
+            android:name=".UpdateReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

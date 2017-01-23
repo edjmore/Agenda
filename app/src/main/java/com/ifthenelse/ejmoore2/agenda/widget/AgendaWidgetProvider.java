@@ -35,8 +35,7 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
             ConfigActivity.performInitialWidgetSetup(context, widgetId);
         }
 
-        Intent updateService = new Intent(context, UpdateService.class);
-        context.startService(updateService);
+        UpdateService.start(context);
     }
 
     @Override
@@ -55,31 +54,6 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
             Intent stopUpdateService = new Intent(context, UpdateService.class);
             context.stopService(stopUpdateService);
         }
-    }
-
-    public static void setNextUpdateAlarmExact(Context context, long alarmTime) {
-        PendingIntent pendingIntent = getUpdateAlarmIntent(context, -2);
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.RTC, alarmTime, pendingIntent);
-    }
-
-    public static void setNextUpdateAlarmInexact(Context context) {
-        setNextUpdateAlarmInexact(context, System.currentTimeMillis());
-    }
-
-    private static void setNextUpdateAlarmInexact(Context context, long firstAlarm) {
-        PendingIntent pendingIntent = getUpdateAlarmIntent(context, -1);
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setInexactRepeating(AlarmManager.RTC, firstAlarm,
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES / 3, pendingIntent);
-    }
-
-    private static PendingIntent getUpdateAlarmIntent(Context context, int requestCode) {
-        Intent intent = new Intent(context, AgendaWidgetProvider.class);
-        String updateAgendaAction = context.getString(R.string.action_agenda_update);
-        intent.setAction(updateAgendaAction);
-
-        return PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     @Override
@@ -168,6 +142,9 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
         }
     }
 
+    /**
+     * Notifies the widget manager that the data for each widget may have changed.
+     */
     public static void refreshAllWidgets(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         ComponentName widgetName = new ComponentName(context, AgendaWidgetProvider.class);

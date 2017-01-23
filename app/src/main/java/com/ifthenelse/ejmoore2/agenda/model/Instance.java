@@ -2,6 +2,8 @@ package com.ifthenelse.ejmoore2.agenda.model;
 
 import android.support.annotation.NonNull;
 
+import com.ifthenelse.ejmoore2.agenda.DatetimeUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -62,7 +64,11 @@ public class Instance implements Comparable {
     }
 
     public boolean isMultiDay() {
-        return getTrueEndTime() - getTrueBeginTime() > Agenda.ONE_DAY;
+        return getTrueEndTime() - getTrueBeginTime() > DatetimeUtils.ONE_DAY;
+    }
+
+    public boolean isMomentary() {
+        return getTrueBeginTime() == getTrueEndTime();
     }
 
     private Event getEvent() {

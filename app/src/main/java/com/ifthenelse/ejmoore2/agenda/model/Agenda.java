@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 
-import com.ifthenelse.ejmoore2.agenda.Utils;
+import com.ifthenelse.ejmoore2.agenda.DatetimeUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,10 +24,6 @@ import java.util.TimeZone;
  */
 
 public class Agenda {
-
-    public static final long ONE_DAY = 1000 * 60 * 60 * 24;
-    public static final long ONE_WEEK = ONE_DAY * 7;
-    public static final long ONE_MONTH = ONE_DAY * 31;
 
     /**
      * The Day class holds a list of Instances for a given date in the Agenda.
@@ -58,7 +54,7 @@ public class Agenda {
         }
 
         private long getTimestamp() {
-            return instances.isEmpty() ? 0 : Utils.roundDown(getSortedInstances()[0].getBeginTime());
+            return instances.isEmpty() ? 0 : DatetimeUtils.roundDown(getSortedInstances()[0].getBeginTime());
         }
 
         @Override
@@ -113,7 +109,7 @@ public class Agenda {
      * the correct Day for the Instance and adding it there.
      */
     private void addInstance(Instance instance) {
-        long date = Utils.roundDown(instance.getBeginTime());
+        long date = DatetimeUtils.roundDown(instance.getBeginTime());
         Day day = dateToDayMap.get(date);
         if (day == null) {
             day = new Day();
@@ -178,13 +174,13 @@ public class Agenda {
              * a separate instance for each day the event occurs during. */
             long beginTime = trueBeginTime;
             long endTime;
-            while (trueEndTime - beginTime > ONE_DAY) {
-                endTime = Utils.roundUp(trueBeginTime);
+            while (trueEndTime - beginTime > DatetimeUtils.ONE_DAY) {
+                endTime = DatetimeUtils.roundUp(trueBeginTime);
 
                 Instance instance = new Instance(beginTime, endTime, trueBeginTime, trueEndTime, event);
                 agenda.addInstance(instance);
 
-                beginTime = Utils.getTomorrow(endTime);
+                beginTime = DatetimeUtils.getTomorrow(endTime);
             }
             // Add the final instance (with true end time).
             Instance instance = new Instance(beginTime, trueEndTime, trueBeginTime, trueEndTime, event);

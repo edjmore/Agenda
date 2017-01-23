@@ -18,8 +18,10 @@ import android.widget.RemoteViews;
 import android.widget.Switch;
 
 import com.ifthenelse.ejmoore2.agenda.ConfigManager;
+import com.ifthenelse.ejmoore2.agenda.DatetimeUtils;
 import com.ifthenelse.ejmoore2.agenda.PermissionHelper;
 import com.ifthenelse.ejmoore2.agenda.R;
+import com.ifthenelse.ejmoore2.agenda.UpdateService;
 import com.ifthenelse.ejmoore2.agenda.model.Agenda;
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetProvider;
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetService;
@@ -160,24 +162,23 @@ public class ConfigActivity extends AppCompatActivity {
         AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
         widgetManager.updateAppWidget(widgetId, rv);
 
-        /* Setup a repeating alarm to update the widget content every ~5 minutes. */
-        AgendaWidgetProvider.setNextUpdateAlarmInexact(context);
+        UpdateService.start(context);
     }
 
     public void onRadioButtonClick(View v) {
         long agendaTimePeriod = -1;
         switch (v.getId()) {
             case R.id.rbutton_one_day:
-                agendaTimePeriod = Agenda.ONE_DAY;
+                agendaTimePeriod = DatetimeUtils.ONE_DAY;
                 break;
             case R.id.rbutton_two_weeks:
-                agendaTimePeriod = Agenda.ONE_WEEK * 2;
+                agendaTimePeriod = DatetimeUtils.ONE_WEEK * 2;
                 break;
             case R.id.rbutton_one_month:
-                agendaTimePeriod = Agenda.ONE_MONTH;
+                agendaTimePeriod = DatetimeUtils.ONE_MONTH;
                 break;
             case R.id.rbutton_one_week:
-                agendaTimePeriod = Agenda.ONE_WEEK;
+                agendaTimePeriod = DatetimeUtils.ONE_WEEK;
         }
 
         if (agendaTimePeriod > 0 && configManager.setLong(R.string.config_time_period_key, agendaTimePeriod)) {
@@ -207,14 +208,14 @@ public class ConfigActivity extends AppCompatActivity {
     }
 
     private void setupTimePeriodRadioGroup() {
-        long timePeriod = configManager.getLong(R.string.config_time_period_key, Agenda.ONE_WEEK);
+        long timePeriod = configManager.getLong(R.string.config_time_period_key, DatetimeUtils.ONE_WEEK);
 
         int selected = R.id.rbutton_one_week;
-        if (timePeriod == Agenda.ONE_DAY) {
+        if (timePeriod == DatetimeUtils.ONE_DAY) {
             selected = R.id.rbutton_one_day;
-        } else if (timePeriod == Agenda.ONE_WEEK * 2) {
+        } else if (timePeriod == DatetimeUtils.ONE_WEEK * 2) {
             selected = R.id.rbutton_two_weeks;
-        } else if (timePeriod == Agenda.ONE_MONTH) {
+        } else if (timePeriod == DatetimeUtils.ONE_MONTH) {
             selected = R.id.rbutton_one_month;
         }
 
