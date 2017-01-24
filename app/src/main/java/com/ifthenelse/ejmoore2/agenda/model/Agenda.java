@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 
-import com.ifthenelse.ejmoore2.agenda.DatetimeUtils;
+import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -66,22 +66,9 @@ public class Agenda {
             return 0;
         }
 
-        private String getDateString() {
-            if (instances.isEmpty()) {
-                return "";
-            } else {
-                return instances.get(0).getStartDateString();
-            }
-        }
-
         public Date getDate() {
-            String dateString = getDateString();
-            try {
-                SimpleDateFormat sdf = Instance.getDateFormat();
-                return sdf.parse(dateString);
-            } catch (ParseException e) {
-                return new Date(0);
-            }
+            return new Date(
+                    instances.isEmpty() ? 0 : instances.get(0).getBeginTime());
         }
     }
 

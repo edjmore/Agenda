@@ -1,4 +1,4 @@
-package com.ifthenelse.ejmoore2.agenda;
+package com.ifthenelse.ejmoore2.agenda.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;

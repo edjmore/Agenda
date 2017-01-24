@@ -2,10 +2,9 @@ package com.ifthenelse.ejmoore2.agenda.model;
 
 import android.support.annotation.NonNull;
 
-import com.ifthenelse.ejmoore2.agenda.DatetimeUtils;
+import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
@@ -14,8 +13,6 @@ import java.util.Locale;
  */
 
 public class Instance implements Comparable {
-
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("MM-dd-yyyy", Locale.US);
 
     /* beginTime and endTime mark the beginning and
      * ending timestamps for an instance on a given Day. */
@@ -31,16 +28,32 @@ public class Instance implements Comparable {
 
     private Event event;
 
-    Instance(long beginTime, long endTime, long trueBeginTime, Event event) {
-        this(beginTime, endTime, trueBeginTime, endTime, event);
-    }
-
     Instance(long beginTime, long endTime, long trueBeginTime, long trueEndTime, Event event) {
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.trueBeginTime = trueBeginTime;
         this.trueEndTime = trueEndTime;
         this.event = event;
+    }
+
+    /**
+     * @return A string with the true event time values and event ID encoded within.
+     */
+    public String encodeInstance() {
+        return getTrueBeginTime() + "-" + getTrueEndTime() + "-" + getEventId();
+    }
+
+    /**
+     * @param encodedInstance A string encoded by Instance.encodeInstance().
+     * @return An array of instance data ordered as follows: trueBeginTime, trueEndTime, eventId.
+     */
+    public static long[] decodeInstance(String encodedInstance) {
+        String[] tokens = encodedInstance.split("-");
+        return new long[]{
+                Long.parseLong(tokens[0]),
+                Long.parseLong(tokens[1]),
+                Long.parseLong(tokens[2])
+        };
     }
 
     public long getBeginTime() {
@@ -73,14 +86,6 @@ public class Instance implements Comparable {
 
     private Event getEvent() {
         return event;
-    }
-
-    String getStartDateString() {
-        return SDF.format(new Date(getBeginTime()));
-    }
-
-    static SimpleDateFormat getDateFormat() {
-        return SDF;
     }
 
     @Override

@@ -3,14 +3,14 @@ package com.ifthenelse.ejmoore2.agenda;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
+import android.util.Log;
 
+import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetProvider;
 
 public class UpdateService extends Service {
@@ -19,16 +19,22 @@ public class UpdateService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                //Log.i("UpdateService", "Screen on: refreshing widgets and starting update alarms");
 
                 AgendaWidgetProvider.refreshAllWidgets(context);
                 startUpdateAlarms(context);
 
             } else if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                //Log.i("UpdateService", "Screen off: canceling pending update alarms");
 
                 stopUpdateAlarms(context);
             }
         }
 
+        /**
+         * Begin scheduling update alarms to go off ~5 minutes. When the alarm goes off a
+         * broadcast will be sent to the UpdateReceiver requesting a widget refresh.
+         */
         private void startUpdateAlarms(Context context) {
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             long nowTime = System.currentTimeMillis(),
@@ -37,16 +43,21 @@ public class UpdateService extends Service {
             alarmManager.setInexactRepeating(AlarmManager.RTC, nowTime, interval, operation);
         }
 
+        /**
+         * Cancel any pending update alarms and stop repeating.
+         */
         private void stopUpdateAlarms(Context context) {
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             PendingIntent operation = getUpdateAlarmOperation(context);
             alarmManager.cancel(operation);
         }
 
+        /**
+         * Returns a pending broadcast intent, requesting a widget data refresh.
+         */
         private PendingIntent getUpdateAlarmOperation(Context context) {
-            String updateAgendaAction = context.getString(R.string.action_agenda_update);
             Intent intent = new Intent(context, AgendaWidgetProvider.class).
-                    setAction(updateAgendaAction);
+                    setAction(AgendaWidgetProvider.ACTION_AGENDA_UPDATE);
             return PendingIntent.getBroadcast(context, R.string.request_code_update_alarm, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
         }
@@ -58,6 +69,8 @@ public class UpdateService extends Service {
         SCREEN_UPDATE_INTENT_FILTER.addAction(Intent.ACTION_SCREEN_ON);
         SCREEN_UPDATE_INTENT_FILTER.addAction(Intent.ACTION_SCREEN_OFF);
     }
+
+    private boolean shouldRestartSelf = true;
 
     public UpdateService() {
     }
@@ -71,12 +84,24 @@ public class UpdateService extends Service {
      * Send a broadcast to the UpdateReceiver indicating that the service needs to be restarted.
      */
     private void restartSelf() {
-        Intent restartBroadcast = new Intent(UpdateReceiver.ACTION_RESTART_UPDATE_SERVICE);
+        Intent restartBroadcast = new Intent(this, UpdateReceiver.class)
+                .setAction(UpdateReceiver.ACTION_RESTART_UPDATE_SERVICE);
         sendBroadcast(restartBroadcast);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        //Log.i("UpdateService", "Start command received");
+        shouldRestartSelf = true;
+
+        if (!AgendaWidgetProvider.isAnyWidgetActive(this)) {
+            //Log.i("UpdateService", "No active widgets: stopping self");
+
+            shouldRestartSelf = false;
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
         registerReceiver(SCREEN_UPDATE_RECEIVER, SCREEN_UPDATE_INTENT_FILTER);
         return START_STICKY;
     }
@@ -102,10 +127,14 @@ public class UpdateService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        //Log.i("UpdateService", "Service destroyed");
 
         unregisterReceiver(SCREEN_UPDATE_RECEIVER);
 
-        restartSelf();
+        if (shouldRestartSelf) {
+            //Log.i("UpdateService", "Requesting restart...");
+            restartSelf();
+        }
     }
 
     @Override

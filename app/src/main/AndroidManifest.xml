@@ -32,22 +32,10 @@
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
-        <receiver
-            android:name=".CalendarUpdateReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PROVIDER_CHANGED" />
-
-                <data android:scheme="content" />
-                <data android:host="com.android.calendar" />
-            </intent-filter>
-        </receiver>
-
         <service
             android:name=".UpdateService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <receiver
             android:name=".UpdateReceiver"
@@ -56,6 +44,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="com.droid.mooresoft.agenda.ACTION_RESTART_UPDATE_SERVICE" />
+
+                <action android:name="android.intent.action.PROVIDER_CHANGED" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.calendar" />
             </intent-filter>
         </receiver>
     </application>

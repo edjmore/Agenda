@@ -5,19 +5,16 @@ import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.ifthenelse.ejmoore2.agenda.ArtStudent;
-import com.ifthenelse.ejmoore2.agenda.ConfigManager;
-import com.ifthenelse.ejmoore2.agenda.PermissionHelper;
+import com.ifthenelse.ejmoore2.agenda.util.ArtStudent;
+import com.ifthenelse.ejmoore2.agenda.util.ConfigManager;
+import com.ifthenelse.ejmoore2.agenda.util.PermissionHelper;
 import com.ifthenelse.ejmoore2.agenda.R;
-import com.ifthenelse.ejmoore2.agenda.DatetimeUtils;
+import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 import com.ifthenelse.ejmoore2.agenda.model.Agenda;
 import com.ifthenelse.ejmoore2.agenda.model.Instance;
-
-import java.util.Date;
 
 /**
  * Created by ejmoore2 on 1/15/17.
@@ -67,59 +64,50 @@ public class AgendaWidgetService extends RemoteViewsService {
 
         @Override
         public RemoteViews getViewAt(int position) {
-            RemoteViews rv = new RemoteViews(getPackageName(), R.layout.listitem_day);
-
-            // Set date indicator (e.g. "Tuesday, July 3")
             Agenda.Day day = agenda.getSortedDays()[position];
-            Date date = day.getDate();
-            String dateString = DatetimeUtils.getDateString(day, false);
-            rv.setTextViewText(R.id.day_text, dateString);
 
-            // Day click will bring user to that day in the calendar application.
-            Intent fillInIntent = new Intent()
-                    .putExtra(AgendaWidgetProvider.EXTRA_DATE, date.getTime());
-            rv.setOnClickFillInIntent(R.id.day_text, fillInIntent);
-
-            // List view items are recycled, so the inner layout may not be empty.
+            // List view items are recycled, so we must explicitly clear the inner layout.
+            RemoteViews rv = new RemoteViews(getPackageName(), R.layout.listitem_day);
             rv.removeAllViews(R.id.linearlayout_events);
 
-            /* Construct an inner list view by appending views to the linear layout. */
+            // Setup the date text, and the fill-in intent, which will bring users to the
+            // appropriate calendar day upon clicking on the date text view.
+            rv.setTextViewText(R.id.day_text, DatetimeUtils.getDateString(day, false));
+            rv.setOnClickFillInIntent(R.id.day_text,
+                    new Intent()
+                            .putExtra(AgendaWidgetProvider.EXTRA_DATE, day.getDate().getTime()));
+
+            // Construct an embedded list view by appending views to the inner linear layout
             for (int i = 0; i < day.getSortedInstances().length; i++) {
                 Instance instance = day.getSortedInstances()[i];
+
                 RemoteViews listItem = new RemoteViews(getPackageName(), R.layout.listitem_event);
 
-                /* Set event title and subtitle (e.g. "Going shopping\n3:00 PM"),
-                 * and also add the little colored circle corresponding to event color. */
-                String title = instance.getTitle();
-                listItem.setTextViewText(R.id.event_title_text, title);
+                // Fill the list item with data from the given instance, including: title, time, and color.
+                listItem.setTextViewText(R.id.event_title_text, instance.getTitle());
+                listItem.setTextViewText(R.id.event_subtitle_text,
+                        DatetimeUtils.getTimeString(instance, useRelativeTime));
+                listItem.setImageViewBitmap(R.id.event_color_indicator,
+                        ArtStudent.getInstance(context)
+                                .getColoredCircle(instance.getColor()));
 
-                // Subtitle is either exact time or relative (depending on user preference).
-                String subtitle = DatetimeUtils.getTimeString(instance, useRelativeTime);
-                listItem.setTextViewText(R.id.event_subtitle_text, subtitle);
-
-                int color = instance.getColor();
-                Bitmap coloredCircle = ArtStudent.getInstance(context).getColoredCircle(color);
-                listItem.setImageViewBitmap(R.id.event_color_indicator, coloredCircle);
-
-                // We generate a unique action for each intent b/c otherwise the
-                // system will merge all pending intents into one. The action string
-                // also provides all information necessary to open the correct calendar entry.
-                String uniqueAction =
-                        instance.getEventId() + "-" + instance.getBeginTime() + "-" +
-                                instance.getTrueEndTime() + "-" + instance.getTitle();
-
-                Intent onClickIntent = new Intent(context, AgendaWidgetProvider.class)
-                        .setAction(uniqueAction)
-                        .putExtra(AgendaWidgetProvider.EXTRA_ACTION,
-                                context.getString(R.string.action_event_click));
-                PendingIntent pendingIntent =
-                        PendingIntent.getBroadcast(context, 0, onClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                listItem.setOnClickPendingIntent(R.id.event_container, pendingIntent);
+                // Clicking on this list item will open the calendar application to the corresponding event instance.
+                listItem.setOnClickPendingIntent(R.id.event_container,
+                        getEventClickBroadcast(context, instance));
 
                 rv.addView(R.id.linearlayout_events, listItem);
             }
 
             return rv;
+        }
+
+        private PendingIntent getEventClickBroadcast(Context context, Instance instance) {
+            Intent onClickIntent = new Intent(context, AgendaWidgetProvider.class)
+                    .setAction(instance.encodeInstance())
+                    .putExtra(AgendaWidgetProvider.EXTRA_ACTION,
+                            AgendaWidgetProvider.ACTION_EVENT_CLICK);
+            return PendingIntent.getBroadcast(context, widgetId, onClickIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
         }
 
         @Override
@@ -148,11 +136,15 @@ public class AgendaWidgetService extends RemoteViewsService {
 
         private void refreshAgenda() {
             if (ph.checkPermission(context, Manifest.permission.READ_CALENDAR)) {
+                // Load user preferences for widget.
                 long timePeriod =
                         configManager.getLong(R.string.config_time_period_key, DatetimeUtils.ONE_WEEK);
-                agenda = Agenda.getAgendaForPeriod(context, timePeriod);
                 useRelativeTime = configManager.getBoolean(R.string.config_relative_time_key, false);
+
+                // Load current agenda data.
+                agenda = Agenda.getAgendaForPeriod(context, timePeriod);
             } else {
+
                 ph.notifyUserOfMissingPermission(context, Manifest.permission.READ_CALENDAR);
             }
         }

@@ -3,19 +3,13 @@
 
     <string name="empty_text">There\'s nothing on your agenda</string>
 
-    <string name="save_config">Save Configuration</string>
-
-    <!-- Custom broadcast actions. -->
-    <string name="action_agenda_update">com.ifthenelse.ejmoore2.agenda.ACTION_AGENDA_UPDATE</string>
-    <string name="action_event_click">com.ifthenelse.ejmoore2.agenda.ACTION_EVENT_CLICK</string>
-    <string name="action_edit_new_event">com.ifthenelse.ejmoore2.agenda.ACTION_EDIT_NEW_EVENT</string>
-    <string name="action_open_config">com.ifthenelse.ejmoore2.agenda.ACTION_OPEN_CONFIG</string>
-
+    <!-- Custom font identifiers (currently unused). -->
     <string name="pure_bold">Nokia-Pure-Bold.ttf</string>
     <string name="pure_bolditalic">Nokia-Pure-BoldItalic.ttf</string>
     <string name="pure_italic">Nokia-Pure-Italic.ttf</string>
     <string name="pure_regular">Nokia-Pure-Regular.ttf</string>
 
+    <!-- BEGIN configuration activity text values. -->
     <string name="config_time_period_title">Agenda time period</string>
     <string name="one_day">One day</string>
     <string name="one_week">One week</string>
@@ -23,10 +17,12 @@
     <string name="one_month">One month</string>
 
     <string name="config_event_lower_line_options_title">Show relative time below event</string>
+    <!-- END configuration activity text values. -->
 
     <!-- Keys for the config manager. -->
     <string name="config_time_period_key">config_time_period_key</string>
     <string name="config_relative_time_key">config_relative_time_key</string>
 
+    <!-- Request codes (string ID is used as unique integer value. -->
     <string name="request_code_update_alarm">request_code_update_alarm</string>
 </resources>

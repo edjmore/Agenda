@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetProvider;
+
 public class UpdateReceiver extends BroadcastReceiver {
 
     private static final String PACKAGE = "com.droid.mooresoft.agenda.";
@@ -16,12 +18,23 @@ public class UpdateReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (ACTION_RESTART_UPDATE_SERVICE.equals(intent.getAction())) {
+        String action = intent.getAction();
+        boolean shouldStartUpdateService = false;
 
-            UpdateService.start(context);
+        if (ACTION_RESTART_UPDATE_SERVICE.equals(action) ||
+                Intent.ACTION_BOOT_COMPLETED.equals(action)) {
+            //Log.i("UpdateReceiver", "Broadcast received: " + action);
 
-        } else if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            shouldStartUpdateService = true;
 
+        } else if (Intent.ACTION_PROVIDER_CHANGED.equals(action)) {
+            //Log.i("UpdateReceiver", "Calendar provider info changed, refreshing widgets");
+
+            AgendaWidgetProvider.refreshAllWidgets(context);
+            shouldStartUpdateService = true;
+        }
+
+        if (shouldStartUpdateService) {
             UpdateService.start(context);
         }
     }

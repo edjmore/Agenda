@@ -1,4 +1,4 @@
-package com.ifthenelse.ejmoore2.agenda;
+package com.ifthenelse.ejmoore2.agenda.util;
 
 import android.support.v4.util.Pair;
 
@@ -29,10 +29,23 @@ public class DatetimeUtils {
 
     private static final SimpleDateFormat STF = new SimpleDateFormat("h:mm a", Locale.US);
 
+    /**
+     * Returns a formatted date string for the given Day.
+     *
+     * @param useRelative If true, will attempt to make a relative date
+     *                    string using the current system time (e.g. 'Tomorrow').
+     */
     public static String getDateString(Agenda.Day day, boolean useRelative) {
         return getDateString(day.getDate(), useRelative);
     }
 
+
+    /**
+     * Returns a formatted time string for the given Instance.
+     *
+     * @param useRelative If true, will attempt to make a relative time
+     *                    string using the current system time (e.g. 'begins in 10 minutes').
+     */
     public static String getTimeString(Instance instance, boolean useRelative) {
         if (instance.isAllDay()) {
             return "all day";
@@ -183,8 +196,9 @@ public class DatetimeUtils {
                 // Ensures that we only take n consecutive tokens, where n=precision.
                 // For example, with n=2 "1 week 2 hours 3 minutes" will be shortened to "1 week".
                 end = Math.min(i + precision, end);
+
+                result += " " + token;
             }
-            result += " " + token;
         }
 
         return result.isEmpty() ? "now" : result;

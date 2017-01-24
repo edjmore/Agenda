@@ -1,10 +1,12 @@
-package com.ifthenelse.ejmoore2.agenda;
+package com.ifthenelse.ejmoore2.agenda.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+
+import com.ifthenelse.ejmoore2.agenda.R;
 
 import java.util.HashMap;
 import java.util.Map;

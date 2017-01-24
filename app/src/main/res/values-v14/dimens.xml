@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--<dimen name="widget_margin">0dp</dimen>-->
+
+    <!-- After API v14, widget has a built-in margin of 8dp. -->
+    <dimen name="widget_margin">0dp</dimen>
 </resources>

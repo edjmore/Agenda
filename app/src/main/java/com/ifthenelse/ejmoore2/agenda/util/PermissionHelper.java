@@ -1,4 +1,4 @@
-package com.ifthenelse.ejmoore2.agenda;
+package com.ifthenelse.ejmoore2.agenda.util;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -12,6 +12,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 
+import com.ifthenelse.ejmoore2.agenda.R;
 import com.ifthenelse.ejmoore2.agenda.view.ConfigActivity;
 
 /**
