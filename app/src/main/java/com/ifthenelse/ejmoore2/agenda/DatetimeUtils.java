@@ -166,7 +166,7 @@ public class DatetimeUtils {
             return result;
         }
 
-        String timeString = getRelativeTimeString(elapsedTime, 4);
+        String timeString = getRelativeTimeString(elapsedTime, 2);
         result += timeString.equals("now") ? timeString : "in" + timeString;
 
         return result.trim();
@@ -174,10 +174,17 @@ public class DatetimeUtils {
 
     private static String getRelativeTimeString(long elapsedTime, int precision) {
         String result = "";
-
         String[] tokens = getRelativeTimeStrings(elapsedTime);
-        for (int i = 0; i < precision; i++) {
-            result += " " + tokens[i];
+
+        int end = tokens.length;
+        for (int i = 0; i < end; i++) {
+            String token = tokens[i];
+            if (!token.isEmpty()) {
+                // Ensures that we only take n consecutive tokens, where n=precision.
+                // For example, with n=2 "1 week 2 hours 3 minutes" will be shortened to "1 week".
+                end = Math.min(i + precision, end);
+            }
+            result += " " + token;
         }
 
         return result.isEmpty() ? "now" : result;
@@ -202,7 +209,8 @@ public class DatetimeUtils {
 
         if (elapsedTime < ONE_MINUTE) {
             unitStr = "";
-            unitValue = Math.max(elapsedTime, 1);
+            unitValue = 1;
+            elapsedTime = 0;
         } else if (elapsedTime < ONE_HOUR) {
             unitStr = " minute";
             unitValue = ONE_MINUTE;
