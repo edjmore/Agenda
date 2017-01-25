@@ -97,6 +97,8 @@ public class Agenda {
      */
     private void addInstance(Instance instance) {
         long date = DatetimeUtils.roundDown(instance.getBeginTime());
+
+
         Day day = dateToDayMap.get(date);
         if (day == null) {
             day = new Day();
@@ -148,24 +150,18 @@ public class Agenda {
                 }
             }
 
-            // TODO: This code may be unnecessary??
-            /*long actualBeginTime = trueBeginTime;
-            if (event.isAllDay()) {
-                TimeZone localTz = java.util.Calendar.getInstance().getTimeZone();
-                actualBeginTime = convertToLocalTime(actualBeginTime, localTz);
-                trueBeginTime = actualBeginTime;
-                trueEndTime = convertToLocalTime(trueEndTime, localTz) - 1000;
-            } */
-
             /* Events may span multiple days, in which case we create
              * a separate instance for each day the event occurs during. */
             long beginTime = trueBeginTime;
             long endTime;
+            long nowTime = System.currentTimeMillis();
             while (trueEndTime - beginTime > DatetimeUtils.ONE_DAY) {
-                endTime = DatetimeUtils.roundUp(trueBeginTime);
+                endTime = DatetimeUtils.roundUp(beginTime);
 
-                Instance instance = new Instance(beginTime, endTime, trueBeginTime, trueEndTime, event);
-                agenda.addInstance(instance);
+                if (endTime > nowTime) {
+                    Instance instance = new Instance(beginTime, endTime, trueBeginTime, trueEndTime, event);
+                    agenda.addInstance(instance);
+                }
 
                 beginTime = DatetimeUtils.getTomorrow(endTime);
             }
@@ -176,10 +172,6 @@ public class Agenda {
 
         cursor.close();
         return agenda;
-    }
-
-    private static long convertToLocalTime(long time, TimeZone localTz) {
-        return time - localTz.getOffset(time);
     }
 
     public static Agenda empty() {

@@ -6,7 +6,9 @@ import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by edward on 1/16/17.
@@ -34,6 +36,18 @@ public class Instance implements Comparable {
         this.trueBeginTime = trueBeginTime;
         this.trueEndTime = trueEndTime;
         this.event = event;
+        init();
+    }
+
+    private void init() {
+        if (isAllDay()) {
+            long offset = -1 *
+                    DatetimeUtils.getLocalTimeZone().getOffset(System.currentTimeMillis());
+            beginTime += offset;
+            endTime += offset;
+            trueBeginTime += offset;
+            trueEndTime += offset;
+        }
     }
 
     /**

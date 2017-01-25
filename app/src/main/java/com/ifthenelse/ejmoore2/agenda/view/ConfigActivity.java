@@ -84,6 +84,7 @@ public class ConfigActivity extends AppCompatActivity {
         configManager = new ConfigManager(this, widgetId);
         setupTimePeriodRadioGroup();
         setupRelativeTimeSwitch();
+        setupTextColorSwitch();
 
         /* The activity may have been launched by the system because the given widget
          * was just added. In this case, we need to perform some extra steps and setup
@@ -145,6 +146,17 @@ public class ConfigActivity extends AppCompatActivity {
     }
 
     /**
+     * Setup the text color switch to display the default
+     * value or the user selected preference (when available).
+     */
+    private void setupTextColorSwitch() {
+        boolean useWhiteTextTheme = configManager.getBoolean(R.string.config_text_color_key, true);
+        Switch txtColorSwitch = (Switch) findViewById(R.id.switch_text_color);
+
+        txtColorSwitch.setChecked(useWhiteTextTheme);
+    }
+
+    /**
      * Handles selection of agenda time period (e.g. one day, one week, two weeks, or one month).
      */
     public void onRadioButtonClick(View v) {
@@ -169,16 +181,26 @@ public class ConfigActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles the toggle specifying if relative time descriptions
-     * should be used for events in the agenda (e.g. "in 5 minutes").
+     * Handles the two toggles (relative time and text color).
      */
     public void onSwitchClick(View v) {
-        if (v.getId() == R.id.switch_relative_time) {
-            boolean useRelativeTime = ((Switch) v).isChecked();
+        int key = 0;
+        boolean value = false;
 
-            if (configManager.setBoolean(R.string.config_relative_time_key, useRelativeTime)) {
-                wasConfigChanged = true;
-            }
+        switch (v.getId()) {
+            case R.id.switch_relative_time:
+                key = R.string.config_relative_time_key;
+                value = ((Switch) v).isChecked();
+                break;
+
+            case R.id.switch_text_color:
+                key = R.string.config_text_color_key;
+                value = ((Switch) v).isChecked();
+                break;
+        }
+
+        if (key != 0 && configManager.setBoolean(key, value)) {
+            wasConfigChanged = true;
         }
     }
 

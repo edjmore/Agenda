@@ -99,5 +99,27 @@
             android:layout_alignParentRight="true"
             android:onClick="onSwitchClick" />
         <!-- End relative time config. -->
+
+        <!-- Title and switch for agenda text color. -->
+        <TextView
+            android:id="@+id/text_color_title"
+            style="@style/AppTheme.Text.Title.Dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/switch_relative_time"
+            android:layout_marginTop="@dimen/headline_margin"
+            android:padding="@dimen/headline_margin"
+            android:text="@string/config_text_color_title"
+            android:textStyle="normal" />
+
+        <Switch
+            android:id="@+id/switch_text_color"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/text_color_title"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:onClick="onSwitchClick" />
+        <!-- End text color config. -->
     </RelativeLayout>
 </RelativeLayout>

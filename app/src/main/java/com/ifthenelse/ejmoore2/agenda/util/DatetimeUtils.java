@@ -50,7 +50,9 @@ public class DatetimeUtils {
         if (instance.isAllDay()) {
             return "all day";
         } else {
-            return useRelative ? getRelativeTimeString(instance) : getExactTimeString(instance);
+            return useRelative && !instance.isMultiDay() ?
+                    getRelativeTimeString(instance) :
+                    getExactTimeString(instance);
         }
     }
 
@@ -92,7 +94,7 @@ public class DatetimeUtils {
         return calendar.getTimeInMillis();
     }
 
-    private static TimeZone getLocalTimeZone() {
+    public static TimeZone getLocalTimeZone() {
         return Calendar.getInstance().getTimeZone();
     }
 

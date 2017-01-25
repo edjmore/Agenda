@@ -34,7 +34,10 @@ public class AgendaWidgetService extends RemoteViewsService {
 
         private PermissionHelper ph;
         private ConfigManager configManager;
+
+        private long timePeriod;
         private boolean useRelativeTime;
+        private int textColor, subtitleTextColor;
 
         private Agenda agenda;
 
@@ -45,6 +48,7 @@ public class AgendaWidgetService extends RemoteViewsService {
             this.ph = new PermissionHelper();
             this.configManager = new ConfigManager(context, widgetId);
             this.agenda = Agenda.empty();
+            loadPrefs();
         }
 
         @Override
@@ -72,7 +76,8 @@ public class AgendaWidgetService extends RemoteViewsService {
 
             // Setup the date text, and the fill-in intent, which will bring users to the
             // appropriate calendar day upon clicking on the date text view.
-            rv.setTextViewText(R.id.day_text, DatetimeUtils.getDateString(day, false));
+            rv.setTextViewText(R.id.day_text, DatetimeUtils.getDateString(day, true));
+            rv.setTextColor(R.id.day_text, textColor);
             rv.setOnClickFillInIntent(R.id.day_text,
                     new Intent()
                             .putExtra(AgendaWidgetProvider.EXTRA_DATE, day.getDate().getTime()));
@@ -85,8 +90,10 @@ public class AgendaWidgetService extends RemoteViewsService {
 
                 // Fill the list item with data from the given instance, including: title, time, and color.
                 listItem.setTextViewText(R.id.event_title_text, instance.getTitle());
+                listItem.setTextColor(R.id.event_title_text, textColor);
                 listItem.setTextViewText(R.id.event_subtitle_text,
                         DatetimeUtils.getTimeString(instance, useRelativeTime));
+                listItem.setTextColor(R.id.event_subtitle_text, subtitleTextColor);
                 listItem.setImageViewBitmap(R.id.event_color_indicator,
                         ArtStudent.getInstance(context)
                                 .getColoredCircle(instance.getColor()));
@@ -136,16 +143,32 @@ public class AgendaWidgetService extends RemoteViewsService {
 
         private void refreshAgenda() {
             if (ph.checkPermission(context, Manifest.permission.READ_CALENDAR)) {
-                // Load user preferences for widget.
-                long timePeriod =
-                        configManager.getLong(R.string.config_time_period_key, DatetimeUtils.ONE_WEEK);
-                useRelativeTime = configManager.getBoolean(R.string.config_relative_time_key, false);
 
-                // Load current agenda data.
+                // Load user preferences for widget, then current agenda data.
+                loadPrefs();
                 agenda = Agenda.getAgendaForPeriod(context, timePeriod);
-            } else {
 
+            } else {
                 ph.notifyUserOfMissingPermission(context, Manifest.permission.READ_CALENDAR);
+            }
+        }
+
+        /**
+         * Load user preferences related to this widget, including: agenda time period,
+         * whether or not to use relative time descriptions, and text color theme.
+         */
+        private void loadPrefs() {
+            timePeriod =
+                    configManager.getLong(R.string.config_time_period_key, DatetimeUtils.ONE_WEEK);
+
+            useRelativeTime = configManager.getBoolean(R.string.config_relative_time_key, false);
+
+            if (configManager.getBoolean(R.string.config_text_color_key, true)) {
+                textColor = getColor(R.color.text_title);
+                subtitleTextColor = getColor(R.color.text_subtitle);
+            } else {
+                textColor = getColor(R.color.text_title_dark);
+                subtitleTextColor = getColor(R.color.text_subtitle_dark);
             }
         }
     }
