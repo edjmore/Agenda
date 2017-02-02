@@ -2,6 +2,7 @@
     <string name="app_name">Agenda</string>
 
     <string name="empty_text">There\'s nothing on your agenda</string>
+    <string name="empty_day_text">@string/empty_text</string>
 
     <!-- Custom font identifiers (currently unused). -->
     <string name="pure_bold">Nokia-Pure-Bold.ttf</string>
@@ -17,15 +18,17 @@
     <string name="one_month">One month</string>
 
     <string name="config_event_lower_line_options_title">Show relative time below event</string>
-
-    <string name="config_text_color_title">Use white text theme</string>
+    <string name="config_text_color_title">Use light theme</string>
+    <string name="config_empty_days_title">Allow empty days</string>
     <!-- END configuration activity text values. -->
 
     <!-- Keys for the config manager. -->
     <string name="config_time_period_key">config_time_period_key</string>
     <string name="config_relative_time_key">config_relative_time_key</string>
     <string name="config_text_color_key">config_text_color_key</string>
+    <string name="config_allow_empty_days_key">config_allow_empty_days_key</string>
 
     <!-- Request codes (string ID is used as unique integer value. -->
     <string name="request_code_update_alarm">request_code_update_alarm</string>
+    <string name="request_code_service_restart">request_code_service_restart</string>
 </resources>

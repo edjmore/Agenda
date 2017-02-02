@@ -30,7 +30,7 @@
 
     <TextView
         android:id="@+id/empty_view"
-        style="@style/AppTheme.Text.Title"
+        style="@style/AppTheme.Text.Subtitle"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"

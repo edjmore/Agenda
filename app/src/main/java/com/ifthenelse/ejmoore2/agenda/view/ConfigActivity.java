@@ -8,17 +8,16 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 
+import com.ifthenelse.ejmoore2.agenda.R;
 import com.ifthenelse.ejmoore2.agenda.util.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 import com.ifthenelse.ejmoore2.agenda.util.PermissionHelper;
-import com.ifthenelse.ejmoore2.agenda.R;
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetProvider;
 
 public class ConfigActivity extends AppCompatActivity {
@@ -30,6 +29,7 @@ public class ConfigActivity extends AppCompatActivity {
 
     // We only refresh the widget if the user confirms some configuration change.
     private boolean wasConfigChanged = false;
+    private boolean wasThemeChanged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +85,7 @@ public class ConfigActivity extends AppCompatActivity {
         setupTimePeriodRadioGroup();
         setupRelativeTimeSwitch();
         setupTextColorSwitch();
+        setupEmptyDaysSwitch();
 
         /* The activity may have been launched by the system because the given widget
          * was just added. In this case, we need to perform some extra steps and setup
@@ -156,6 +157,13 @@ public class ConfigActivity extends AppCompatActivity {
         txtColorSwitch.setChecked(useWhiteTextTheme);
     }
 
+    private void setupEmptyDaysSwitch() {
+        boolean allowEmptyDays = configManager.getBoolean(R.string.config_allow_empty_days_key, false);
+        Switch emptyDaySwitch = (Switch) findViewById(R.id.switch_empty_days);
+
+        emptyDaySwitch.setChecked(allowEmptyDays);
+    }
+
     /**
      * Handles selection of agenda time period (e.g. one day, one week, two weeks, or one month).
      */
@@ -197,10 +205,19 @@ public class ConfigActivity extends AppCompatActivity {
                 key = R.string.config_text_color_key;
                 value = ((Switch) v).isChecked();
                 break;
+
+            case R.id.switch_empty_days:
+                key = R.string.config_allow_empty_days_key;
+                value = ((Switch) v).isChecked();
+                break;
         }
 
         if (key != 0 && configManager.setBoolean(key, value)) {
             wasConfigChanged = true;
+
+            if (key == R.string.config_text_color_key) {
+                wasThemeChanged = true;
+            }
         }
     }
 
@@ -228,6 +245,10 @@ public class ConfigActivity extends AppCompatActivity {
                     configManager.commitChanges();
 
                     AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
+                    if (wasThemeChanged) {
+                        // Theme change requires completely new view group (for colored buttons).
+                        AgendaWidgetProvider.setupWidgets(this, new int[]{widgetId});
+                    }
                     widgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.listview_days);
                 }
 

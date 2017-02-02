@@ -9,15 +9,12 @@ import android.support.annotation.NonNull;
 
 import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Created by edward on 1/16/17.
@@ -31,10 +28,16 @@ public class Agenda {
     public class Day implements Comparable {
         private List<Instance> instances;
         private Instance[] sortedInstances;
+        private long timestamp;
 
-        private Day() {
+        private Day(long timestamp) {
             this.instances = new ArrayList<>();
             this.sortedInstances = null;
+            this.timestamp = timestamp;
+        }
+
+        public boolean isEmpty() {
+            return instances.isEmpty();
         }
 
         /**
@@ -53,10 +56,6 @@ public class Agenda {
             sortedInstances = null;
         }
 
-        private long getTimestamp() {
-            return instances.isEmpty() ? 0 : DatetimeUtils.roundDown(getSortedInstances()[0].getBeginTime());
-        }
-
         @Override
         public int compareTo(@NonNull Object obj) {
             if (obj instanceof Day) {
@@ -67,8 +66,11 @@ public class Agenda {
         }
 
         public Date getDate() {
-            return new Date(
-                    instances.isEmpty() ? 0 : instances.get(0).getBeginTime());
+            return new Date(getTimestamp());
+        }
+
+        private long getTimestamp() {
+            return timestamp;
         }
     }
 
@@ -96,19 +98,27 @@ public class Agenda {
      * the correct Day for the Instance and adding it there.
      */
     private void addInstance(Instance instance) {
-        long date = DatetimeUtils.roundDown(instance.getBeginTime());
-
-
-        Day day = dateToDayMap.get(date);
-        if (day == null) {
-            day = new Day();
-            dateToDayMap.put(date, day);
-            sortedDays = null;
-        }
+        Day day = getDay(instance.getBeginTime());
         day.addInstance(instance);
     }
 
-    public static Agenda getAgendaForPeriod(Context context, long period) {
+    /**
+     * Returns the Day associated with the given date
+     * timestamp (in millis), creating the Day if necessary.
+     */
+    private Day getDay(long date) {
+        date = DatetimeUtils.roundDown(date);
+
+        Day day = dateToDayMap.get(date);
+        if (day == null) {
+            day = new Day(date);
+            dateToDayMap.put(date, day);
+            sortedDays = null;
+        }
+        return day;
+    }
+
+    public static Agenda getAgendaForPeriod(Context context, long period, boolean allowEmptyDays) {
         /* First, query calendar provider for all instances within the period. */
         String[] projection = new String[]{
                 CalendarContract.Instances.EVENT_ID,
@@ -116,15 +126,21 @@ public class Agenda {
                 CalendarContract.Instances.END
         };
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-        long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis(),
+                finishTime = DatetimeUtils.roundUp(startTime + period);
         ContentUris.appendId(builder, startTime);
-        ContentUris.appendId(builder, startTime + period);
+        ContentUris.appendId(builder, finishTime);
 
         Cursor cursor =
                 context.getContentResolver().query(builder.build(), projection, null, null, null);
         Agenda agenda = Agenda.empty();
         if (cursor == null) {
             return agenda;
+        }
+
+        // Initialize Day objects for each date iff we want to allow empty days.
+        for (long date = startTime; allowEmptyDays && date < finishTime; date += DatetimeUtils.ONE_DAY) {
+            agenda.getDay(date);
         }
 
         // One-to-many relationship from events to instances, and from calendars to events.

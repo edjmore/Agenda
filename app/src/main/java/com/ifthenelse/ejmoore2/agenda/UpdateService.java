@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetProvider;
@@ -32,13 +31,13 @@ public class UpdateService extends Service {
         }
 
         /**
-         * Begin scheduling update alarms to go off ~5 minutes. When the alarm goes off a
+         * Begin scheduling update alarms to go off ~2 minutes. When the alarm goes off a
          * broadcast will be sent to the UpdateReceiver requesting a widget refresh.
          */
         private void startUpdateAlarms(Context context) {
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             long nowTime = System.currentTimeMillis(),
-                    interval = DatetimeUtils.ONE_MINUTE * 5;
+                    interval = DatetimeUtils.ONE_MINUTE * 2;
             PendingIntent operation = getUpdateAlarmOperation(context);
             alarmManager.setInexactRepeating(AlarmManager.RTC, nowTime, interval, operation);
         }
@@ -93,11 +92,14 @@ public class UpdateService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         //Log.i("UpdateService", "Start command received");
         shouldRestartSelf = true;
+        startRestartAlarms();
 
         if (!AgendaWidgetProvider.isAnyWidgetActive(this)) {
             //Log.i("UpdateService", "No active widgets: stopping self");
 
             shouldRestartSelf = false;
+            stopRestartAlarms();
+
             stopSelf();
             return START_NOT_STICKY;
         }
@@ -135,6 +137,36 @@ public class UpdateService extends Service {
             //Log.i("UpdateService", "Requesting restart...");
             restartSelf();
         }
+    }
+
+    /**
+     * Starts a series of inexact repeating alarms, sending the broadcast request that the service be restarted.
+     */
+    private void startRestartAlarms() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        long nowTime = System.currentTimeMillis(),
+                interval = AlarmManager.INTERVAL_HOUR;
+        PendingIntent operation = getRestartServiceOperation();
+        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, nowTime, interval, operation);
+    }
+
+    /**
+     * Cancels any pending restart alarms.
+     */
+    private void stopRestartAlarms() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        PendingIntent operation = getRestartServiceOperation();
+        alarmManager.cancel(operation);
+    }
+
+    /**
+     * Returns a pending broadcast intent, requesting that the service be restarted.
+     */
+    private PendingIntent getRestartServiceOperation() {
+        Intent intent = new Intent(this, UpdateReceiver.class)
+                .setAction(UpdateReceiver.ACTION_RESTART_UPDATE_SERVICE);
+        return PendingIntent.getBroadcast(
+                this, R.string.request_code_service_restart, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     @Override

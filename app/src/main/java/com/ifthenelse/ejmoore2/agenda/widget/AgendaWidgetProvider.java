@@ -9,13 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.ifthenelse.ejmoore2.agenda.util.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.R;
 import com.ifthenelse.ejmoore2.agenda.UpdateService;
 import com.ifthenelse.ejmoore2.agenda.model.Instance;
+import com.ifthenelse.ejmoore2.agenda.util.ConfigManager;
 import com.ifthenelse.ejmoore2.agenda.view.ConfigActivity;
 
 /**
@@ -181,17 +180,33 @@ public class AgendaWidgetProvider extends AppWidgetProvider {
         RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget);
         rv.setEmptyView(R.id.listview_days, R.id.empty_view);
 
-        // Link remote service to provide widget data.
-        rv.setRemoteAdapter(R.id.listview_days,
-                new Intent(context, AgendaWidgetService.class)
-                        .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId));
 
-        // Setup widget buttons (new event and config activity).
+        // Link remote service to provide widget data.
+        Intent intent = new Intent(context, AgendaWidgetService.class)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+        intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME))); // Need this line so we get a distinct
+        rv.setRemoteAdapter(R.id.listview_days, intent);                   // factory for each widget.
+
+        // Setup widget button actions (new event and config activity).
         rv.setOnClickPendingIntent(
                 R.id.button_new_event, getNewEventBroadcast(context, widgetId));
         rv.setOnClickPendingIntent(
                 R.id.button_open_config, getOpenConfigBroadcast(context, widgetId));
 
+        // Set colors based on theme (white or black).
+        ConfigManager configManager = new ConfigManager(context, widgetId);
+        boolean useWhiteTheme = configManager.getBoolean(R.string.config_text_color_key, true);
+        rv.setTextColor(R.id.empty_view,
+                context.getResources().getColor(
+                        useWhiteTheme ?
+                                R.color.text_subtitle :
+                                R.color.text_subtitle_dark));
+        rv.setImageViewResource(R.id.button_new_event,
+                useWhiteTheme ? R.drawable.ic_add_white_24dp : R.drawable.ic_add_black_24dp);
+        rv.setImageViewResource(R.id.button_open_config,
+                useWhiteTheme ? R.drawable.ic_settings_white_24dp : R.drawable.ic_settings_black_24dp);
+
+        // Date click opens given calendar day.
         rv.setPendingIntentTemplate(
                 R.id.listview_days, getViewDateBroadcastTemplate(context, widgetId));
 

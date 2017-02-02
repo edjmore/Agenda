@@ -8,13 +8,13 @@ import android.content.Intent;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.ifthenelse.ejmoore2.agenda.util.ArtStudent;
-import com.ifthenelse.ejmoore2.agenda.util.ConfigManager;
-import com.ifthenelse.ejmoore2.agenda.util.PermissionHelper;
 import com.ifthenelse.ejmoore2.agenda.R;
-import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 import com.ifthenelse.ejmoore2.agenda.model.Agenda;
 import com.ifthenelse.ejmoore2.agenda.model.Instance;
+import com.ifthenelse.ejmoore2.agenda.util.ArtStudent;
+import com.ifthenelse.ejmoore2.agenda.util.ConfigManager;
+import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
+import com.ifthenelse.ejmoore2.agenda.util.PermissionHelper;
 
 /**
  * Created by ejmoore2 on 1/15/17.
@@ -35,8 +35,10 @@ public class AgendaWidgetService extends RemoteViewsService {
         private PermissionHelper ph;
         private ConfigManager configManager;
 
+        /* User configurable settings. */
         private long timePeriod;
         private boolean useRelativeTime;
+        private boolean allowEmptyDays;
         private int textColor, subtitleTextColor;
 
         private Agenda agenda;
@@ -82,27 +84,35 @@ public class AgendaWidgetService extends RemoteViewsService {
                     new Intent()
                             .putExtra(AgendaWidgetProvider.EXTRA_DATE, day.getDate().getTime()));
 
-            // Construct an embedded list view by appending views to the inner linear layout
-            for (int i = 0; i < day.getSortedInstances().length; i++) {
-                Instance instance = day.getSortedInstances()[i];
+            if (allowEmptyDays && day.isEmpty()) {
+                // Simply add one instance of the empty day view.
+                RemoteViews emptyDayView = new RemoteViews(getPackageName(), R.layout.listitem_empty_day);
+                emptyDayView.setTextColor(R.id.empty_day_text, subtitleTextColor);
 
-                RemoteViews listItem = new RemoteViews(getPackageName(), R.layout.listitem_event);
+                rv.addView(R.id.linearlayout_events, emptyDayView);
+            } else {
+                // Construct an embedded list view by appending views to the inner linear layout
+                for (int i = 0; i < day.getSortedInstances().length; i++) {
+                    Instance instance = day.getSortedInstances()[i];
 
-                // Fill the list item with data from the given instance, including: title, time, and color.
-                listItem.setTextViewText(R.id.event_title_text, instance.getTitle());
-                listItem.setTextColor(R.id.event_title_text, textColor);
-                listItem.setTextViewText(R.id.event_subtitle_text,
-                        DatetimeUtils.getTimeString(instance, useRelativeTime));
-                listItem.setTextColor(R.id.event_subtitle_text, subtitleTextColor);
-                listItem.setImageViewBitmap(R.id.event_color_indicator,
-                        ArtStudent.getInstance(context)
-                                .getColoredCircle(instance.getColor()));
+                    RemoteViews listItem = new RemoteViews(getPackageName(), R.layout.listitem_event);
 
-                // Clicking on this list item will open the calendar application to the corresponding event instance.
-                listItem.setOnClickPendingIntent(R.id.event_container,
-                        getEventClickBroadcast(context, instance));
+                    // Fill the list item with data from the given instance, including: title, time, and color.
+                    listItem.setTextViewText(R.id.event_title_text, instance.getTitle());
+                    listItem.setTextColor(R.id.event_title_text, textColor);
+                    listItem.setTextViewText(R.id.event_subtitle_text,
+                            DatetimeUtils.getTimeString(instance, useRelativeTime));
+                    listItem.setTextColor(R.id.event_subtitle_text, subtitleTextColor);
+                    listItem.setImageViewBitmap(R.id.event_color_indicator,
+                            ArtStudent.getInstance(context)
+                                    .getColoredCircle(instance.getColor()));
 
-                rv.addView(R.id.linearlayout_events, listItem);
+                    // Clicking on this list item will open the calendar application to the corresponding event instance.
+                    listItem.setOnClickPendingIntent(R.id.event_container,
+                            getEventClickBroadcast(context, instance));
+
+                    rv.addView(R.id.linearlayout_events, listItem);
+                }
             }
 
             return rv;
@@ -146,7 +156,7 @@ public class AgendaWidgetService extends RemoteViewsService {
 
                 // Load user preferences for widget, then current agenda data.
                 loadPrefs();
-                agenda = Agenda.getAgendaForPeriod(context, timePeriod);
+                agenda = Agenda.getAgendaForPeriod(context, timePeriod, allowEmptyDays);
 
             } else {
                 ph.notifyUserOfMissingPermission(context, Manifest.permission.READ_CALENDAR);
@@ -162,6 +172,7 @@ public class AgendaWidgetService extends RemoteViewsService {
                     configManager.getLong(R.string.config_time_period_key, DatetimeUtils.ONE_WEEK);
 
             useRelativeTime = configManager.getBoolean(R.string.config_relative_time_key, false);
+            allowEmptyDays = configManager.getBoolean(R.string.config_allow_empty_days_key, false);
 
             if (configManager.getBoolean(R.string.config_text_color_key, true)) {
                 textColor = getColor(R.color.text_title);

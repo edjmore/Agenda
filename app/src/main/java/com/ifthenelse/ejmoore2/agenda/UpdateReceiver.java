@@ -1,9 +1,9 @@
 package com.ifthenelse.ejmoore2.agenda;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.ifthenelse.ejmoore2.agenda.widget.AgendaWidgetProvider;
 
@@ -37,5 +37,19 @@ public class UpdateReceiver extends BroadcastReceiver {
         if (shouldStartUpdateService) {
             UpdateService.start(context);
         }
+    }
+
+    /**
+     * @return True iff an instance of the given service is running.
+     */
+    private boolean isServiceRunning(Context context, Class<?> serviceCls) {
+        ActivityManager activityManager =
+                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo info : activityManager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceCls.getName().equals(info.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
