@@ -50,20 +50,22 @@ public class DatetimeUtils {
         if (instance.isAllDay()) {
             return "all day";
         } else {
-            return useRelative && !instance.isMultiDay() ?
+            return (useRelative && !instance.isMultiDay() ?
                     getRelativeTimeString(instance) :
-                    getExactTimeString(instance);
+                    getExactTimeString(instance)).toLowerCase();
         }
     }
 
     /**
-     * Returns the millis value of 12:00 AM on the previous day.
+     * Returns the millis value of 12:01 AM on the previous day.
      */
     public static long getYesterday(long today) {
         return roundDown(today - ONE_DAY);
     }
 
-    /* Returns the millis value of 12:00 AM on the subsequent day. */
+    /**
+     * Returns the millis value of 12:01 AM on the subsequent day.
+     */
     public static long getTomorrow(long today) {
         return roundDown(today + ONE_DAY);
     }
@@ -72,17 +74,11 @@ public class DatetimeUtils {
      * Rounds the given time up to 11:59 PM that day.
      */
     public static long roundUp(long time) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(time);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTimeInMillis();
+        return getTomorrow(time) - 2 * ONE_MINUTE;
     }
 
     /**
-     * Rounds the given time down to 12:00 AM that day.
+     * Rounds the given time down to 12:01 AM that day.
      */
     public static long roundDown(long time) {
         Calendar calendar = Calendar.getInstance();
@@ -91,7 +87,8 @@ public class DatetimeUtils {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTimeInMillis();
+        long newTime = calendar.getTimeInMillis();
+        return newTime - (newTime % 1000) + ONE_MINUTE;
     }
 
     public static TimeZone getLocalTimeZone() {
@@ -145,8 +142,8 @@ public class DatetimeUtils {
 
     private static String getExactTimeString(Instance instance) {
         STF.setTimeZone(getLocalTimeZone());
-        Date trueBeginDate = new Date(instance.getTrueBeginTime()),
-                trueEndDate = new Date(instance.getTrueEndTime());
+        Date trueBeginDate = new Date(instance.getBeginTime()),
+                trueEndDate = new Date(instance.getEndTime());
 
         String beginTimeString = STF.format(trueBeginDate);
         if (instance.isMomentary()) {

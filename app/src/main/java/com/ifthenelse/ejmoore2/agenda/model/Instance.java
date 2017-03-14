@@ -23,8 +23,7 @@ public class Instance implements Comparable {
 
     /* If an Instance spans multiple Days, then there will be separate Instance
      * objects for each Day. The trueBeginTime and trueEndTime fields hold the
-     * true timestamps for the instance (as retrieved from the CalendarProvider).
-     */
+     * true timestamps for the instance (as retrieved from the CalendarProvider). */
     private long trueBeginTime;
     private long trueEndTime;
 
@@ -36,7 +35,7 @@ public class Instance implements Comparable {
         this.trueBeginTime = trueBeginTime;
         this.trueEndTime = trueEndTime;
         this.event = event;
-        init();
+        //init();
     }
 
     private void init() {

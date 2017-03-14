@@ -2,7 +2,7 @@
     <string name="app_name">Agenda</string>
 
     <string name="empty_text">There\'s nothing on your agenda</string>
-    <string name="empty_day_text">@string/empty_text</string>
+    <string name="empty_day_text">there\'s nothing on your agenda</string>
 
     <!-- Custom font identifiers (currently unused). -->
     <string name="pure_bold">Nokia-Pure-Bold.ttf</string>

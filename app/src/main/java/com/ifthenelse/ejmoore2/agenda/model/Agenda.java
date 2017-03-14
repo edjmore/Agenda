@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.ifthenelse.ejmoore2.agenda.util.DatetimeUtils;
 
@@ -15,6 +16,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Created by edward on 1/16/17.
@@ -120,13 +122,14 @@ public class Agenda {
 
     public static Agenda getAgendaForPeriod(Context context, long period, boolean allowEmptyDays) {
         /* First, query calendar provider for all instances within the period. */
+        final long nowTime = System.currentTimeMillis();
         String[] projection = new String[]{
                 CalendarContract.Instances.EVENT_ID,
                 CalendarContract.Instances.BEGIN,
                 CalendarContract.Instances.END
         };
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-        long startTime = System.currentTimeMillis(),
+        long startTime = DatetimeUtils.roundDown(nowTime),
                 finishTime = DatetimeUtils.roundUp(startTime + period);
         ContentUris.appendId(builder, startTime);
         ContentUris.appendId(builder, finishTime);
@@ -166,11 +169,26 @@ public class Agenda {
                 }
             }
 
+            // We filter out events that are not all day today and have already finished.
+            if (trueEndTime < nowTime && !event.isAllDay()) {
+                continue;
+            }
+
+            // All day events need to be translated from GMT.
+            if (event.isAllDay()) {
+                long offset = -1 *
+                        DatetimeUtils.getLocalTimeZone().getOffset(System.currentTimeMillis());
+                trueBeginTime += offset;
+                trueEndTime += offset;
+            }
+
+            Log.e("Agenda", String.format("%d, %s, %s, %d, %d",
+                    eventId, event.getTitle(), event.getCalendar().getDisplayName(), trueBeginTime, trueEndTime));
+
             /* Events may span multiple days, in which case we create
              * a separate instance for each day the event occurs during. */
             long beginTime = trueBeginTime;
             long endTime;
-            long nowTime = System.currentTimeMillis();
             while (trueEndTime - beginTime > DatetimeUtils.ONE_DAY) {
                 endTime = DatetimeUtils.roundUp(beginTime);
 

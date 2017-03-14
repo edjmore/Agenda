@@ -11,4 +11,6 @@
     <color name="text_title_dark">#FF000000</color>
     <color name="text_subtitle_dark">#B3000000</color>
     <color name="text_headline_dark">@color/text_title_dark</color>
+
+    <color name="divider">#2AFFFFFF</color>
 </resources>
