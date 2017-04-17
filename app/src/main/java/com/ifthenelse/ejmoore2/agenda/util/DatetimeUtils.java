@@ -50,35 +50,38 @@ public class DatetimeUtils {
         if (instance.isAllDay()) {
             return "all day";
         } else {
-            return (useRelative && !instance.isMultiDay() ?
+            long nowTime = System.currentTimeMillis();
+            boolean isSoon = instance.getBeginTime() > nowTime && instance.getBeginTime() < nowTime + 6 * ONE_HOUR
+                    || instance.getEndTime() < nowTime + 6 * ONE_HOUR; // If instance occurs within 6 hours we use relative time.
+            return (useRelative && !instance.isMultiDay() || isSoon && instance.getBeginTime() < roundUp(nowTime)?
                     getRelativeTimeString(instance) :
                     getExactTimeString(instance)).toLowerCase();
         }
     }
 
     /**
-     * Returns the millis value of 12:01 AM on the previous day.
+     * Returns the millis value of 12:00 AM on the previous day.
      */
     public static long getYesterday(long today) {
         return roundDown(today - ONE_DAY);
     }
 
     /**
-     * Returns the millis value of 12:01 AM on the subsequent day.
+     * Returns the millis value of 12:00 AM on the subsequent day.
      */
     public static long getTomorrow(long today) {
         return roundDown(today + ONE_DAY);
     }
 
     /**
-     * Rounds the given time up to 11:59 PM that day.
+     * Rounds the given time up to 12:00 AM the next day.
      */
     public static long roundUp(long time) {
-        return getTomorrow(time) - 2 * ONE_MINUTE;
+        return getTomorrow(time);
     }
 
     /**
-     * Rounds the given time down to 12:01 AM that day.
+     * Rounds the given time down to 12:00 AM that day.
      */
     public static long roundDown(long time) {
         Calendar calendar = Calendar.getInstance();
@@ -88,7 +91,7 @@ public class DatetimeUtils {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         long newTime = calendar.getTimeInMillis();
-        return newTime - (newTime % 1000) + ONE_MINUTE;
+        return newTime; //- (newTime % 1000) + ONE_MINUTE;
     }
 
     public static TimeZone getLocalTimeZone() {
@@ -116,11 +119,11 @@ public class DatetimeUtils {
                 dateTime = date.getTime();
 
         String result = null;
-        if (dateTime >= roundDown(nowTime) && dateTime <= roundUp(nowTime)) {
+        if (dateTime >= roundDown(nowTime) && dateTime < roundUp(nowTime)) {
             result = "Today";
-        } else if (dateTime >= getYesterday(nowTime) && dateTime <= roundUp(getYesterday(nowTime))) {
+        } else if (dateTime >= getYesterday(nowTime) && dateTime < roundDown(nowTime)) {
             result = "Yesterday";
-        } else if (dateTime >= getTomorrow(nowTime) && dateTime <= roundUp(getTomorrow(nowTime))) {
+        } else if (dateTime >= getTomorrow(nowTime) && dateTime < roundUp(getTomorrow(nowTime))) {
             result = "Tomorrow";
         }
 
@@ -142,18 +145,20 @@ public class DatetimeUtils {
 
     private static String getExactTimeString(Instance instance) {
         STF.setTimeZone(getLocalTimeZone());
-        Date trueBeginDate = new Date(instance.getBeginTime()),
-                trueEndDate = new Date(instance.getEndTime());
+        Date beginDate = new Date(instance.getBeginTime()),
+                endDate = new Date(instance.getEndTime());
 
-        String beginTimeString = STF.format(trueBeginDate);
+        String beginTimeString = STF.format(beginDate);
         if (instance.isMomentary()) {
             return beginTimeString;
         } else {
-            String endTimeString = STF.format(trueEndDate);
+            String endTimeString = STF.format(endDate);
             if (instance.isMultiDay()) {
+                Date trueBeginDate = new Date(instance.getTrueBeginTime()),
+                        trueEndDate = new Date(instance.getTrueEndTime());
                 return String.format(Locale.US, "%s (%s) - %s (%s)",
-                        beginTimeString, getRelativeDateString(trueBeginDate, true, true).toLowerCase(),
-                        endTimeString, getRelativeDateString(trueEndDate, true, true).toLowerCase());
+                        STF.format(trueBeginDate), getRelativeDateString(trueBeginDate, true, true).toLowerCase(),
+                        STF.format(trueEndDate), getRelativeDateString(trueEndDate, true, true).toLowerCase());
             } else {
                 return beginTimeString + " - " + endTimeString;
             }

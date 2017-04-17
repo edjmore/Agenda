@@ -109,8 +109,14 @@ public class AgendaWidgetService extends RemoteViewsService {
                                     .getColoredCircle(instance.getColor()));
 
                     // Clicking on this list item will open the calendar application to the corresponding event instance.
-                    listItem.setOnClickPendingIntent(R.id.event_container,
-                            getEventClickBroadcast(context, instance));
+                    if (instance.isAllDay()) {
+                        // All day events will just open to that calendar day.
+                        listItem.setOnClickPendingIntent(R.id.event_container,
+                                getAllDayEventClickBroadcast(context, day));
+                    } else {
+                        listItem.setOnClickPendingIntent(R.id.event_container,
+                                getEventClickBroadcast(context, instance));
+                    }
 
                     rv.addView(R.id.linearlayout_events, listItem);
                 }
@@ -124,6 +130,15 @@ public class AgendaWidgetService extends RemoteViewsService {
                     .setAction(instance.encodeInstance())
                     .putExtra(AgendaWidgetProvider.EXTRA_ACTION,
                             AgendaWidgetProvider.ACTION_EVENT_CLICK);
+            return PendingIntent.getBroadcast(context, widgetId, onClickIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
+        private PendingIntent getAllDayEventClickBroadcast(Context context, Agenda.Day day) {
+            Intent onClickIntent = new Intent(context, AgendaWidgetProvider.class)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                    .setAction(AgendaWidgetProvider.ACTION_VIEW_DATE)
+                    .putExtra(AgendaWidgetProvider.EXTRA_DATE, day.getDate().getTime());
             return PendingIntent.getBroadcast(context, widgetId, onClickIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
         }

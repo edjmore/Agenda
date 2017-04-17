@@ -54,6 +54,14 @@ public class Agenda {
         }
 
         private void addInstance(Instance instance) {
+            // We may already have an instance with the same exact title (for some holidays). In that
+            // case we collapse all the "duplicates" into one.
+            for (Instance inst : instances) {
+                if (inst.getEvent().getTitle().equals(instance.getTitle())) {
+                    inst.setDupCount(inst.getDupCount() + 1);
+                    return; // No need to add duplicate, and still sorted.
+                }
+            }
             instances.add(instance);
             sortedInstances = null;
         }
@@ -156,6 +164,10 @@ public class Agenda {
             long trueBeginTime = cursor.getLong(1);
             long trueEndTime = cursor.getLong(2);
 
+            // One minute is the smallest time unit you can enter in the calendar app.
+            trueBeginTime -= trueBeginTime % DatetimeUtils.ONE_MINUTE;
+            trueEndTime -= trueEndTime % DatetimeUtils.ONE_MINUTE;
+
             Event event = idToEventMap.get(eventId);
             if (event == null) {
                 event = Event.getById(context, eventId, idToCalendarMap);
@@ -175,33 +187,43 @@ public class Agenda {
             }
 
             // All day events need to be translated from GMT.
+            long offset = 0;
             if (event.isAllDay()) {
-                long offset = -1 *
+                offset = -1 *
                         DatetimeUtils.getLocalTimeZone().getOffset(System.currentTimeMillis());
+                Log.e("all-day", String.format("%s: %d - %d (%d)",
+                        event.getTitle(), trueBeginTime, trueEndTime, (trueEndTime - trueBeginTime) / (1000 * 60 * 60)));
                 trueBeginTime += offset;
                 trueEndTime += offset;
+            } else {
+                //Log.e("not all-day", String.format("%s: %d - %d (%d)",
+                //        event.getTitle(), trueBeginTime, trueEndTime, (trueEndTime - trueBeginTime) / (1000 * 60 * 60)));
             }
 
-            Log.e("Agenda", String.format("%d, %s, %s, %d, %d",
-                    eventId, event.getTitle(), event.getCalendar().getDisplayName(), trueBeginTime, trueEndTime));
+            //Log.e("Agenda", String.format("%d, %s, %s, %d, %d",
+            //        eventId, event.getTitle(), event.getCalendar().getDisplayName(), trueBeginTime, trueEndTime));
 
             /* Events may span multiple days, in which case we create
              * a separate instance for each day the event occurs during. */
             long beginTime = trueBeginTime;
             long endTime;
-            while (trueEndTime - beginTime > DatetimeUtils.ONE_DAY) {
-                endTime = DatetimeUtils.roundUp(beginTime);
+            do {
+                endTime = Math.min(trueEndTime, DatetimeUtils.roundUp(beginTime));
+                if (event.isAllDay()) Log.e("loop1",
+                        event.getTitle() + ": " + beginTime + " - " + endTime +
+                                " (" + (endTime - beginTime) / (1000 * 60) + ")");
 
-                if (endTime > nowTime) {
+                if (endTime > nowTime) { // Skip instances that have already passed.
                     Instance instance = new Instance(beginTime, endTime, trueBeginTime, trueEndTime, event);
                     agenda.addInstance(instance);
                 }
 
-                beginTime = DatetimeUtils.getTomorrow(endTime);
-            }
-            // Add the final instance (with true end time).
-            Instance instance = new Instance(beginTime, trueEndTime, trueBeginTime, trueEndTime, event);
-            agenda.addInstance(instance);
+                beginTime = endTime;
+
+                if (event.isAllDay()) Log.e("loop2",
+                        event.getTitle() + ": " + beginTime + " - " + endTime +
+                                " (" + (endTime - beginTime) / (1000 * 60) + ")");
+            } while (endTime < trueEndTime);
         }
 
         cursor.close();

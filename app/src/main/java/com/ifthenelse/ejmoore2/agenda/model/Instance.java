@@ -28,6 +28,7 @@ public class Instance implements Comparable {
     private long trueEndTime;
 
     private Event event;
+    private int dupCount;
 
     Instance(long beginTime, long endTime, long trueBeginTime, long trueEndTime, Event event) {
         this.beginTime = beginTime;
@@ -35,10 +36,11 @@ public class Instance implements Comparable {
         this.trueBeginTime = trueBeginTime;
         this.trueEndTime = trueEndTime;
         this.event = event;
+        this.dupCount = 1;
         //init();
     }
 
-    private void init() {
+    /* private void init() {
         if (isAllDay()) {
             long offset = -1 *
                     DatetimeUtils.getLocalTimeZone().getOffset(System.currentTimeMillis());
@@ -47,7 +49,7 @@ public class Instance implements Comparable {
             trueBeginTime += offset;
             trueEndTime += offset;
         }
-    }
+    } */
 
     /**
      * @return A string with the true event time values and event ID encoded within.
@@ -67,6 +69,10 @@ public class Instance implements Comparable {
                 Long.parseLong(tokens[1]),
                 Long.parseLong(tokens[2])
         };
+    }
+
+    void setDupCount(int dupCount) {
+        this.dupCount = dupCount;
     }
 
     public long getBeginTime() {
@@ -90,21 +96,28 @@ public class Instance implements Comparable {
     }
 
     public boolean isMultiDay() {
-        return getTrueEndTime() - getTrueBeginTime() > DatetimeUtils.ONE_DAY;
+        return getTrueEndTime() > DatetimeUtils.roundUp(getTrueBeginTime());
     }
 
     public boolean isMomentary() {
         return getTrueBeginTime() == getTrueEndTime();
     }
 
-    private Event getEvent() {
+    Event getEvent() {
         return event;
     }
+
+    int getDupCount() { return dupCount; }
 
     @Override
     public int compareTo(@NonNull Object obj) {
         if (obj instanceof Instance) {
             Instance other = (Instance) obj;
+
+            if ((this.isAllDay() || other.isAllDay()) && !(this.isAllDay() && other.isAllDay())) {
+                // Exactly  one is all-day.
+                return this.isAllDay() ? -1 : 1; // All-day event goes first.
+            }
 
             // Order chronologically, then alphabetically by event title.
             int diff = (int) (this.getTrueBeginTime() - other.getTrueBeginTime());
@@ -124,7 +137,7 @@ public class Instance implements Comparable {
     }
 
     public String getTitle() {
-        return getEvent().getTitle();
+        return getEvent().getTitle() + (getDupCount() > 1 ? String.format(Locale.US, " (x%d)", getDupCount()) : "");
     }
 
     public int getColor() {
